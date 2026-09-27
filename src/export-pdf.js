@@ -159,9 +159,9 @@ function templatePages(doc, result, params, pageW, pageH) {
   }
 }
 
-export function toPDF(result, params) {
+export function toPDF(result, params, { compress = true } = {}) {
   const format = params.paper === 'Letter' ? 'letter' : 'a4';
-  const doc = new jsPDF({ unit: 'mm', format, orientation: 'portrait', compress: false });
+  const doc = new jsPDF({ unit: 'mm', format, orientation: 'portrait', compress });
   const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
   doc.setProperties({ title: 'Claude Box templates', creator: 'Claude Box template generator' });
   coverPage(doc, result, params, pageW, pageH);

@@ -42,7 +42,7 @@ const pageMM = (doc, i) => {
 
 test('A4 pdf pages are exactly A4 and there is a 100 mm scale square', () => {
   const { params, result } = make();
-  const doc = toPDF(result, params);
+  const doc = toPDF(result, params, { compress: false });
   const n = doc.getNumberOfPages();
   assert.ok(n >= 3, `pages ${n}`);
   for (let i = 1; i <= n; i++) {
@@ -54,15 +54,22 @@ test('A4 pdf pages are exactly A4 and there is a 100 mm scale square', () => {
 
 test('Letter pdf uses letter pages and a 4 inch square in inch mode', () => {
   const { params, result } = make({ paper: 'Letter', units: 'in' });
-  const doc = toPDF(result, params);
+  const doc = toPDF(result, params, { compress: false });
   const [w, h] = pageMM(doc, 1);
   assert.ok(Math.abs(w - 215.9) < 0.01 && Math.abs(h - 279.4) < 0.01);
   assert.match(doc.output(), / 288(\.0*)? -288(\.0*)? re/);
 });
 
+test('pdf is compressed by default', () => {
+  const { params, result } = make();
+  const small = toPDF(result, params).output('arraybuffer').byteLength;
+  const big = toPDF(result, params, { compress: false }).output('arraybuffer').byteLength;
+  assert.ok(small < big / 2, `compressed ${small} vs raw ${big}`);
+});
+
 test('warnings appear in the pdf', () => {
   const { params, result } = make({ H: 150, D: 750, carcass: 25, drawer: 25 });
   assert.ok(result.warnings.length);
-  const text = toPDF(result, params).output();
+  const text = toPDF(result, params, { compress: false }).output();
   assert.ok(text.includes('does not fit'));
 });

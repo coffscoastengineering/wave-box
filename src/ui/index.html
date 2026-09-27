@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Box — Template Generator</title>
+<style>/*CSS*/</style>
+</head>
+<body>
+<header class="top">
+  <h1>Claude Box <span>template generator</span></h1>
+  <p>Pick a size and timber thickness, then print the 1:1 templates or download CNC files. Everything runs in your browser.</p>
+</header>
+
+<main class="layout">
+  <form id="form" class="panel" novalidate aria-label="Box size and timber">
+    <fieldset>
+      <legend>Units</legend>
+      <div class="seg" role="radiogroup" aria-label="Units">
+        <label><input type="radio" name="units" value="mm" checked><span>mm</span></label>
+        <label><input type="radio" name="units" value="in"><span>inches</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Box size</legend>
+      <div class="field"><label for="H">Height</label><input id="H" name="H" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="H-err" role="alert"></p></div>
+      <div class="field"><label for="D">Depth (front to back)</label><input id="D" name="D" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="D-err" role="alert"></p></div>
+      <div class="field"><label for="W">Carcass width</label><input id="W" name="W" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="W-err" role="alert"></p></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Timber thickness</legend>
+      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Walnut sides</label><input id="walnut" name="walnut" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="walnut-err" role="alert"></p></div>
+      <div class="field"><label for="carcass"><i class="sw carcass" aria-hidden="true"></i>Carcass</label><input id="carcass" name="carcass" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="carcass-err" role="alert"></p></div>
+      <div class="field"><label for="drawer"><i class="sw drawer" aria-hidden="true"></i>Drawers &amp; lid</label><input id="drawer" name="drawer" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="drawer-err" role="alert"></p></div>
+      <div class="field"><label for="gap">Side stand-off gap</label><input id="gap" name="gap" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="gap-err" role="alert"></p></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Paper</legend>
+      <div class="seg" role="radiogroup" aria-label="Paper size">
+        <label><input type="radio" name="paper" value="A4" checked><span>A4</span></label>
+        <label><input type="radio" name="paper" value="Letter"><span>US Letter</span></label>
+      </div>
+    </fieldset>
+
+    <button type="button" id="reset" class="link">Reset to original design</button>
+  </form>
+
+  <section class="stage" aria-label="Preview and downloads">
+    <div class="preview-card">
+      <div class="preview-head">
+        <h2>Side view</h2>
+        <p id="overall" class="overall"></p>
+      </div>
+      <div id="preview" class="preview" role="img" aria-label="Side view of the box"></div>
+      <ul class="legend" aria-label="Legend">
+        <li><i class="sw walnut"></i>Walnut side (see-through)</li>
+        <li><i class="sw carcass"></i>Carcass</li>
+        <li><i class="sw drawer"></i>Drawers &amp; lid</li>
+        <li><i class="sw hole"></i>Ø20 dowel</li>
+      </ul>
+    </div>
+
+    <div id="warnings" class="warnings" role="status" aria-live="polite" hidden></div>
+
+    <div class="actions">
+      <button type="button" id="pdf" class="primary">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+        Download printable templates (PDF)
+      </button>
+      <div class="cnc">
+        <label for="timber">CNC / laser files</label>
+        <select id="timber"></select>
+        <button type="button" id="svg" class="secondary">SVG</button>
+        <button type="button" id="dxf" class="secondary">DXF</button>
+      </div>
+    </div>
+    <p class="hint">Print the PDF at <strong>100 % / “Actual size”</strong> and check the scale square with a ruler before cutting.</p>
+
+    <details class="cutlist">
+      <summary>Cut list</summary>
+      <div class="table-wrap"><table id="cutlist"><thead><tr><th>Part</th><th>Qty</th><th>Timber</th><th>Finished size</th><th>Block / notes</th></tr></thead><tbody></tbody></table></div>
+    </details>
+  </section>
+</main>
+<script>/*JS*/</script>
+</body>
+</html>
