@@ -163,19 +163,6 @@ function update() {
 let timer;
 const schedule = () => { clearTimeout(timer); timer = setTimeout(update, 150); };
 
-function sizeTag() {
-  const p = current.params;
-  return `${Math.round(p.H)}x${Math.round(p.D)}x${Math.round(p.W)}`;
-}
-
-function download(name, data, type) {
-  const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type }));
-  const a = document.createElement('a');
-  a.href = url; a.download = name;
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 form.addEventListener('input', schedule);
 window.addEventListener('resize', () => { if (current) refreshView(); });
 
@@ -184,7 +171,9 @@ $('reset').addEventListener('click', () => { fillForm(DEFAULTS); viewKey = ''; u
 $('pdf').addEventListener('click', () => {
   update();
   const doc = toPDF(current.result, current.params);
-  download(`claude-box-${sizeTag()}-templates.pdf`, doc.output('blob'));
+  const url = URL.createObjectURL(doc.output('blob'));
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 });
 
 fillForm(DEFAULTS);
