@@ -1,5 +1,5 @@
 import { layout, placePoint } from './layout.js';
-import { labelLines } from './labels.js';
+import { labelLines, estimateLabelWidth } from './labels.js';
 
 const n = (v) => Number(v.toFixed(4));
 
@@ -12,7 +12,7 @@ export function byTimber(parts) {
 // AutoCAD R12 ASCII DXF, millimetres. Sheet y is flipped so the drawing reads the same way up as the SVG/PDF.
 export function toDXF(parts, { units = 'mm' } = {}) {
   const labelH = 16;
-  const L = layout(parts, { gap: 12, maxWidth: 800, labelH });
+  const L = layout(parts, { gap: 12, maxWidth: 800, labelH, labelW: (p) => estimateLabelWidth(p, units, 3) });
   const out = [];
   const w = (...pairs) => { for (let i = 0; i < pairs.length; i += 2) out.push(String(pairs[i]), String(pairs[i + 1])); };
 

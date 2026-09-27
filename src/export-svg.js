@@ -1,12 +1,12 @@
 import { layout, placePoint } from './layout.js';
-import { labelLines } from './labels.js';
+import { labelLines, estimateLabelWidth } from './labels.js';
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const n = (v) => Number(v.toFixed(3));
 
 export function toSVG(parts, { title = 'Claude Box templates', units = 'mm' } = {}) {
   const M = 10, labelH = 16;
-  const L = layout(parts, { gap: 12, maxWidth: 800, labelH });
+  const L = layout(parts, { gap: 12, maxWidth: 800, labelH, labelW: (p) => estimateLabelWidth(p, units, 2) });
   const W = n(L.width + 2 * M), H = n(L.height + 2 * M);
   const cut = [], holes = [], labels = [];
   for (const it of L.items) {

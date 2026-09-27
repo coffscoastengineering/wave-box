@@ -2,10 +2,10 @@ import { bboxOf } from './geom.js';
 
 // Row-packs parts onto a sheet. Sheet coordinates: x right, y DOWN, mm.
 // Each item reserves labelH above the part outline.
-export function layout(parts, { gap = 15, maxWidth = 600, labelH = 0 } = {}) {
+export function layout(parts, { gap = 15, maxWidth = 600, labelH = 0, labelW = () => 0 } = {}) {
   const items = parts.filter((p) => p.loops.length).map((part) => {
     const b = bboxOf(part.loops);
-    return { part, b, w: b.z1 - b.z0, h: b.y1 - b.y0 + labelH, labelH };
+    return { part, b, w: Math.max(b.z1 - b.z0, labelW(part)), h: b.y1 - b.y0 + labelH, labelH };
   }).sort((a, c) => c.h - a.h);
 
   let x = 0, y = 0, rowH = 0, width = 0;

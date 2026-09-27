@@ -108,7 +108,11 @@ function grainArrow(doc, x, y, grain) {
 
 function templatePages(doc, result, params, pageW, pageH) {
   const pw = pageW - 2 * MARGIN, ph = pageH - 2 * MARGIN;
-  const L = layout(result.parts, { gap: 15, maxWidth: 3 * pw - 2 * OVERLAP, labelH: LABEL_H });
+  const labelW = (part) => Math.max(...labelLines(part, params.units).map((t, i) => {
+    doc.setFont('helvetica', i ? 'normal' : 'bold'); doc.setFontSize(8);
+    return doc.getTextWidth(t);
+  })) + 2;
+  const L = layout(result.parts, { gap: 15, maxWidth: 3 * pw - 2 * OVERLAP, labelH: LABEL_H, labelW });
   const stepX = pw - OVERLAP, stepY = ph - OVERLAP;
   const cols = Math.max(1, Math.ceil((L.width - OVERLAP) / stepX));
   const rows = Math.max(1, Math.ceil((L.height - OVERLAP) / stepY));

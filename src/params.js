@@ -9,6 +9,7 @@ export const LIMITS = Object.freeze({
 
 export const CLEARANCE = 1.5;
 export const DOWEL_D = 20;
+const SNAP = 0.05;
 
 // All numeric values are millimetres.
 export function validate(raw = {}) {
@@ -17,7 +18,10 @@ export function validate(raw = {}) {
   for (const [key, [lo, hi]] of Object.entries(LIMITS)) {
     if (raw[key] === undefined) continue;
     const text = String(raw[key]).trim();
-    const v = text === '' ? NaN : Number(text);
+    let v = text === '' ? NaN : Number(text);
+    // Inch display rounding can land a hair outside a limit; snap instead of erroring.
+    if (v < lo && v >= lo - SNAP) v = lo;
+    if (v > hi && v <= hi + SNAP) v = hi;
     if (!Number.isFinite(v)) {
       errors[key] = 'Enter a number';
     } else if (v < lo || v > hi) {

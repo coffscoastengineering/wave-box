@@ -99,3 +99,21 @@ test('dowel near an edge warns', () => {
   const { warnings } = buildBox(validate({ H: 150, D: 190 }).params);
   assert.ok(warnings.some((w) => /dowel/i.test(w)), warnings.join('\n'));
 });
+
+test('carcass too thick for a short tier: no overlapping boards, clear warning', () => {
+  for (const D of [190, 375, 750]) {
+    const { parts, warnings } = buildBox(validate({ H: 150, D, carcass: 25, drawer: 25 }).params);
+    assert.deepEqual(overlaps(parts), [], `D${D}`);
+    assert.ok(warnings.some((w) => /too short/i.test(w)), warnings.join('\n'));
+  }
+});
+
+test('normal thick timber does not produce slivers or split warnings', () => {
+  for (const carcass of [6, 12]) {
+    const { parts, warnings } = buildBox(validate({ carcass }).params);
+    assert.ok(!warnings.some((w) => /splits/.test(w)), warnings.join('\n'));
+    assert.equal(parts.find((p) => p.id === 'top.wall').loops.length, 1, `carcass ${carcass}`);
+  }
+  const { warnings } = buildBox(validate({ H: 150, D: 375 }).params);
+  assert.ok(!warnings.some((w) => /splits/.test(w)), warnings.join('\n'));
+});

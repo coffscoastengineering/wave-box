@@ -71,5 +71,5 @@ test('warnings appear in the pdf', () => {
   const { params, result } = make({ H: 150, D: 750, carcass: 25, drawer: 25 });
   assert.ok(result.warnings.length);
   const text = toPDF(result, params, { compress: false }).output();
-  assert.ok(text.includes('does not fit'));
+  assert.ok(text.includes(result.warnings[0].slice(0, 30)), result.warnings[0]);
 });

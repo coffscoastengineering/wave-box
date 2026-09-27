@@ -60,8 +60,25 @@ test('byTimber groups drawable parts', () => {
 });
 
 test('labels switch units', () => {
+  const floor = parts.find((p) => p.id === 'bottom.floor');
+  assert.ok(labelLines(floor, 'mm').join(' ').includes('288 mm'));
+  assert.ok(labelLines(floor, 'in').join(' ').includes('11.34"'));
   const wall = parts.find((p) => p.id === 'bottom.wall');
-  assert.ok(labelLines(wall, 'mm').join(' ').includes('288 mm'));
-  assert.ok(labelLines(wall, 'in').join(' ').includes('11.34"'));
   assert.ok(labelLines(wall, 'mm').join(' ').toLowerCase().includes('block'));
+});
+
+test('layout reserves label width so labels cannot overprint neighbours', () => {
+  const L = layout(drawable, { gap: 15, maxWidth: 600, labelH: 20, labelW: () => 150 });
+  for (const it of L.items) assert.ok(it.w >= 150, `${it.part.id} width ${it.w}`);
+  for (let i = 0; i < L.items.length; i++) for (let j = i + 1; j < L.items.length; j++) {
+    const a = L.items[i], b = L.items[j];
+    assert.ok(a.dz + a.w <= b.dz || b.dz + b.w <= a.dz || a.dy + a.h <= b.dy || b.dy + b.h <= a.dy, `${a.part.id} x ${b.part.id}`);
+  }
+});
+
+test('curved part label is short and carries the block size', () => {
+  const wall = parts.find((p) => p.id === 'bottom.wall');
+  const text = labelLines(wall, 'mm').join(' ');
+  assert.match(text, /block 288 × [\d.]+ × [\d.]+ mm/i);
+  assert.ok(Math.max(...labelLines(wall, 'mm').map((l) => l.length)) <= 60);
 });

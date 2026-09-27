@@ -40,3 +40,10 @@ test('unknown units and paper fall back', () => {
   assert.equal(params.paper, 'A4');
   assert.equal(validate({ units: 'in', paper: 'Letter' }).params.units, 'in');
 });
+
+test('values within 0.05 mm of a limit (inch round-trip) are accepted and snapped', () => {
+  const { params, errors } = validate({ D: 189.992, W: 119.99, carcass: 2.997, H: 600.011 });
+  assert.deepEqual(errors, {});
+  assert.equal(params.D, 190); assert.equal(params.W, 120); assert.equal(params.carcass, 3); assert.equal(params.H, 600);
+  assert.ok(validate({ D: 189.9 }).errors.D);
+});

@@ -1,12 +1,5 @@
 import { bboxOf } from './geom.js';
-import { fmt, TIMBER_NAME } from './labels.js';
-
-const ALLOW = 5;
-
-const dims = (vals, units) => {
-  const f = (mm) => (units === 'in' ? (mm / 25.4).toFixed(2) : String(Number(mm.toFixed(1))));
-  return `${vals.map(f).join(' × ')}${units === 'in' ? '"' : ' mm'}`;
-};
+import { fmt, dims, blockDims, TIMBER_NAME } from './labels.js';
 
 export function cutList(parts, units = 'mm') {
   return parts.map((p) => {
@@ -26,7 +19,7 @@ export function cutList(parts, units = 'mm') {
       row.notes = `Rip to width, end bevels ${p.bevels[0]}° / ${p.bevels[1]}°`;
     } else {
       row.finished = dims([p.length, depth, height], units);
-      row.block = dims([p.length, depth + 2 * ALLOW, height + 2 * ALLOW], units);
+      row.block = dims(blockDims(p), units);
       row.notes = `Carve from block; bandsaw needs ${fmt(p.length, units)} depth of cut`;
     }
     return row;

@@ -7,6 +7,7 @@ import {
 const FAR = 1e5;
 const MIN_DOWEL_MARGIN = 5;
 const MIN_DRAWER_HEIGHT = 20;
+const MIN_PIECE_AREA = 20;
 
 const REFS = {
   'bottom.ends': 'Bottom:1+Sides (1):1+Component36:1',
@@ -92,7 +93,10 @@ export function buildBox(params) {
   const dowels = MASTER.dowels.map((d) => ({ z: d.z * sz, y: d.y * sy, d: DOWEL_D }));
   const walnutPaths = toPaths([scaleLoop(MASTER.walnut, sz, sy)]);
 
-  const add = (id, name, tier, timber, kind, thickness, x, paths, extra = {}) => {
+  const add = (id, name, tier, timber, kind, thickness, x, raw, extra = {}) => {
+    // Offsets around tight curves leave hair-thin slivers; they are not real pieces.
+    const biggest = Math.max(0, ...raw.map((q) => Math.abs(areaOf([q]))));
+    const paths = raw.filter((q) => Math.abs(areaOf([q])) >= Math.max(MIN_PIECE_AREA, biggest * 0.02));
     if (!paths.length || areaOf(paths) < 1) return false;
     const n = outerCount(paths);
     if (n > 1) warnings.push(`${name} splits into ${n} pieces at this size — try thinner timber or a larger box.`);
@@ -125,6 +129,9 @@ export function buildBox(params) {
 
     if (tier === 'top') {
       const wallTop = m.wallTop * sy;
+      if (wallTop - (y0 + tc) < 1) {
+        warnings.push(`${T} is too short for ${tc} mm carcass — the back wall has no room. Use thinner carcass timber or a taller box.`);
+      }
       const wall = inter(inter(ring(tc), back), rect(-FAR, y0 + tc, FAR, wallTop));
       add('top.wall', `${T} back wall (curl)`, tier, 'carcass', 'curved', tc, xs.carcass, wall);
       const air = diff(rect(-FAR, y0 + tc, FAR, FAR), E);
@@ -136,6 +143,10 @@ export function buildBox(params) {
       continue;
     }
 
+    if (y1 - y0 < 2 * tc + 1) {
+      warnings.push(`${T} is too short for ${tc} mm carcass — its floor and top would overlap. Use thinner carcass timber or a taller box.`);
+      continue;
+    }
     const top = inter(E, rect(-FAR, y1 - tc, FAR, y1));
     add(`${tier}.top`, `${T} ${tier === 'bottom' ? 'shelf' : 'top'}`, tier, 'carcass', 'board', tc, xs.carcass, top);
     const wall = inter(inter(ring(tc), back), rect(-FAR, y0 + tc, FAR, y1 - tc));

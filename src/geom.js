@@ -48,6 +48,7 @@ export function offset(paths, dmm) {
 }
 
 export function rect(z0, y0, z1, y1) {
+  if (z1 <= z0 || y1 <= y0) return [];
   const c = (v) => Math.round(Math.max(-BIG, Math.min(BIG, v)) * S);
   return [[{ X: c(z0), Y: c(y0) }, { X: c(z1), Y: c(y0) }, { X: c(z1), Y: c(y1) }, { X: c(z0), Y: c(y1) }]];
 }
