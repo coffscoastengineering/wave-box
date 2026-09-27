@@ -44,12 +44,6 @@ function centroidZ(loop) {
   return cz / (3 * a);
 }
 
-function circle(z, y, d, n = 72) {
-  const pts = [];
-  for (let i = 0; i < n; i++) { const t = (-2 * Math.PI * i) / n; pts.push([z + (d / 2) * Math.cos(t), y + (d / 2) * Math.sin(t)]); }
-  return pts;
-}
-
 // Distance from point to the boundary of a polygon set (mm).
 function edgeDistance(paths, z, y) {
   let best = Infinity;
@@ -124,8 +118,7 @@ export function buildBox(params) {
     const ring = (t) => diff(E, offset(E, -t));
 
     const endHoles = dowels.filter((d) => contains(E, d.z, d.y));
-    const endPaths = diff(E, toPaths(endHoles.map((d) => circle(d.z, d.y, d.d))));
-    add(`${tier}.ends`, `${T} carcass end`, tier, 'carcass', 'profile', tc, xs.end, endPaths, { qty: 2, holes: endHoles });
+    add(`${tier}.ends`, `${T} carcass end`, tier, 'carcass', 'profile', tc, xs.end, E, { qty: 2, holes: endHoles });
 
     const floor = inter(E, rect(-FAR, y0, FAR, y0 + tc));
     add(`${tier}.floor`, `${T} ${tier === 'bottom' ? 'base' : 'floor'}`, tier, 'carcass', 'board', tc, xs.carcass, floor);
@@ -171,8 +164,7 @@ export function buildBox(params) {
     add(`${tier}.drawerBack`, `${D_} back`, tier, 'drawer', 'curved', td, xs.inner, dBack);
   }
 
-  const walnutCut = diff(walnutPaths, toPaths(dowels.map((d) => circle(d.z, d.y, d.d))));
-  add('sides.walnut', 'Walnut side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutCut, { qty: 2, holes: dowels });
+  add('sides.walnut', 'Walnut side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels });
 
   const endsUnion = union(...['bottom', 'middle', 'top'].map((t) => toPaths([scaleLoop(MASTER.tiers[t].env, sz, sy)])));
   for (const [i, d] of dowels.entries()) {
