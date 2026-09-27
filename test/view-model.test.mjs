@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildBox } from '../src/parts.js';
 import { validate } from '../src/params.js';
-import { partOptions, selectParts } from '../src/ui/view-model.js';
+import { partOptions, groupedPartOptions, selectParts } from '../src/ui/view-model.js';
 
 const { parts } = buildBox(validate({}).params);
 
@@ -20,6 +20,18 @@ test('partOptions labels show quantity for parts cut more than once', () => {
   assert.match(walnut.label, /×2/);
   const floor = opts.find((o) => o.id === 'bottom.floor');
   assert.doesNotMatch(floor.label, /×/);
+});
+
+test('groupedPartOptions groups by tier in box order, walnut last', () => {
+  const groups = groupedPartOptions(parts);
+  assert.deepEqual(groups.map((g) => g.group), ['Bottom tier', 'Middle tier', 'Top tier', 'Walnut sides']);
+  const total = groups.reduce((n, g) => n + g.options.length, 0);
+  assert.equal(total, partOptions(parts).length);
+});
+
+test('groupedPartOptions options match partOptions labels for that part', () => {
+  const flat = Object.fromEntries(partOptions(parts).map((o) => [o.id, o.label]));
+  for (const g of groupedPartOptions(parts)) for (const o of g.options) assert.equal(o.label, flat[o.id]);
 });
 
 test('selectParts with empty id returns every drawable part', () => {

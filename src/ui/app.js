@@ -6,7 +6,7 @@ import { toDXF, byTimber } from '../export-dxf.js';
 import { cutList } from '../cutlist.js';
 import { fmt, TIMBER_NAME } from '../labels.js';
 import { bboxOf } from '../geom.js';
-import { partOptions, selectParts } from './view-model.js';
+import { groupedPartOptions, selectParts } from './view-model.js';
 
 const FIELDS = Object.keys(LIMITS);
 const $ = (id) => document.getElementById(id);
@@ -51,8 +51,14 @@ function renderPreview(parts) {
 function renderPartOptions(result) {
   const sel = $('viewPart');
   const prev = sel.value;
-  sel.replaceChildren(new Option('Full assembly', ''), ...partOptions(result.parts).map((o) => new Option(o.label, o.id)));
-  sel.value = [...sel.options].some((o) => o.value === prev) ? prev : '';
+  const groups = groupedPartOptions(result.parts).map((g) => {
+    const og = document.createElement('optgroup');
+    og.label = g.group;
+    og.append(...g.options.map((o) => new Option(o.label, o.id)));
+    return og;
+  });
+  sel.replaceChildren(new Option('Full assembly', ''), ...groups);
+  sel.value = [...sel.querySelectorAll('option')].some((o) => o.value === prev) ? prev : '';
 }
 
 function renderCutList(result) {

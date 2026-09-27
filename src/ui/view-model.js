@@ -2,8 +2,18 @@
 
 const drawable = (parts) => parts.filter((p) => p.loops.length);
 
+const optionFor = (p) => ({ id: p.id, label: p.qty > 1 ? `${p.name} (×${p.qty})` : p.name });
+
 export function partOptions(parts) {
-  return drawable(parts).map((p) => ({ id: p.id, label: p.qty > 1 ? `${p.name} (×${p.qty})` : p.name }));
+  return drawable(parts).map(optionFor);
+}
+
+const TIER_GROUP = { bottom: 'Bottom tier', middle: 'Middle tier', top: 'Top tier', sides: 'Walnut sides' };
+
+export function groupedPartOptions(parts) {
+  return Object.entries(TIER_GROUP)
+    .map(([tier, group]) => ({ group, options: drawable(parts).filter((p) => p.tier === tier).map(optionFor) }))
+    .filter((g) => g.options.length);
 }
 
 export function selectParts(parts, id) {
