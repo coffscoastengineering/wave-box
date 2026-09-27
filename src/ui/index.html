@@ -7,35 +7,40 @@
 <style>/*CSS*/</style>
 </head>
 <body>
-<header class="top">
-  <h1>Claude Box <span>template generator</span></h1>
-  <p>Pick a size and timber thickness, then print the 1:1 templates or download CNC files. Everything runs in your browser.</p>
+<header class="nameplate">
+  <div class="nameplate-mark" aria-hidden="true">
+    <svg viewBox="0 0 32 32"><path d="M4 12V4h8M28 20v8h-8M16 10v12M10 16h12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+  </div>
+  <div class="nameplate-text">
+    <h1>Claude Box</h1>
+    <p>Cutting templates for any size, printed 1:1 or exported for CNC</p>
+  </div>
 </header>
 
 <main class="layout">
   <form id="form" class="panel" novalidate aria-label="Box size and timber">
     <fieldset>
-      <legend>Box size (mm)</legend>
-      <div class="field"><label for="H">Height</label><input id="H" name="H" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="H-err" role="alert"></p></div>
-      <div class="field"><label for="D">Depth (front to back)</label><input id="D" name="D" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="D-err" role="alert"></p></div>
-      <div class="field"><label for="W">Carcass width</label><input id="W" name="W" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="W-err" role="alert"></p></div>
+      <legend><i class="bracket" aria-hidden="true"></i>Box size <span class="legend-unit">mm</span></legend>
+      <div class="field"><label for="H">Height</label><input id="H" name="H" type="number" inputmode="decimal" class="num"><p class="err" id="H-err" role="alert"></p></div>
+      <div class="field"><label for="D">Depth, front to back</label><input id="D" name="D" type="number" inputmode="decimal" class="num"><p class="err" id="D-err" role="alert"></p></div>
+      <div class="field"><label for="W">Carcass width</label><input id="W" name="W" type="number" inputmode="decimal" class="num"><p class="err" id="W-err" role="alert"></p></div>
     </fieldset>
 
     <fieldset>
-      <legend>Timber thickness (mm)</legend>
-      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Walnut sides</label><input id="walnut" name="walnut" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="walnut-err" role="alert"></p></div>
-      <div class="field"><label for="carcass"><i class="sw carcass" aria-hidden="true"></i>Carcass</label><input id="carcass" name="carcass" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="carcass-err" role="alert"></p></div>
-      <div class="field"><label for="drawer"><i class="sw drawer" aria-hidden="true"></i>Drawers &amp; lid</label><input id="drawer" name="drawer" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="drawer-err" role="alert"></p></div>
-      <div class="field"><label for="gap">Side stand-off gap</label><input id="gap" name="gap" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="gap-err" role="alert"></p></div>
+      <legend><i class="bracket" aria-hidden="true"></i>Timber thickness <span class="legend-unit">mm</span></legend>
+      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Walnut sides</label><input id="walnut" name="walnut" type="number" inputmode="decimal" class="num"><p class="err" id="walnut-err" role="alert"></p></div>
+      <div class="field"><label for="carcass"><i class="sw carcass" aria-hidden="true"></i>Carcass</label><input id="carcass" name="carcass" type="number" inputmode="decimal" class="num"><p class="err" id="carcass-err" role="alert"></p></div>
+      <div class="field"><label for="drawer"><i class="sw drawer" aria-hidden="true"></i>Drawers &amp; lid</label><input id="drawer" name="drawer" type="number" inputmode="decimal" class="num"><p class="err" id="drawer-err" role="alert"></p></div>
+      <div class="field"><label for="gap">Side stand-off gap</label><input id="gap" name="gap" type="number" inputmode="decimal" class="num"><p class="err" id="gap-err" role="alert"></p></div>
     </fieldset>
 
     <fieldset>
-      <legend>Paper</legend>
+      <legend><i class="bracket" aria-hidden="true"></i>Paper</legend>
       <div class="seg" role="radiogroup" aria-label="Paper size">
         <label><input type="radio" name="paper" value="A4" checked><span>A4</span></label>
         <label><input type="radio" name="paper" value="A3"><span>A3</span></label>
         <label><input type="radio" name="paper" value="A2"><span>A2</span></label>
-        <label><input type="radio" name="paper" value="Letter"><span>US Letter</span></label>
+        <label><input type="radio" name="paper" value="Letter"><span>Letter</span></label>
       </div>
     </fieldset>
 
@@ -46,15 +51,17 @@
     <div class="preview-card">
       <div class="preview-head">
         <h2>Side view</h2>
-        <p id="overall" class="overall"></p>
+        <p id="overall" class="overall num"></p>
       </div>
-      <div class="view-select">
-        <label for="viewPart">Show</label>
-        <select id="viewPart"><option value="">Full assembly</option></select>
-      </div>
+
+      <div class="tabs" role="tablist" aria-label="Show tier" id="tabs"></div>
+      <div class="chips" role="tablist" aria-label="Show part" id="chips" hidden></div>
+
       <div id="preview" class="preview" role="img" aria-label="Side view of the box"></div>
-      <ul class="legend" aria-label="Legend" id="legend">
-        <li><i class="sw walnut"></i>Walnut side (see-through)</li>
+      <div id="dimline" class="dimline" aria-hidden="true"></div>
+
+      <ul class="legend" aria-label="Legend">
+        <li><i class="sw walnut"></i>Walnut side, see-through</li>
         <li><i class="sw carcass"></i>Carcass</li>
         <li><i class="sw drawer"></i>Drawers &amp; lid</li>
         <li><i class="sw hole"></i>Ø20 dowel</li>

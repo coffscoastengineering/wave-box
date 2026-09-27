@@ -6,12 +6,13 @@ import { toDXF, byTimber } from '../export-dxf.js';
 import { cutList } from '../cutlist.js';
 import { fmt, TIMBER_NAME } from '../labels.js';
 import { bboxOf } from '../geom.js';
-import { groupedPartOptions, selectParts } from './view-model.js';
+import { TIERS, groupedPartOptions, selectParts } from './view-model.js';
 
 const FIELDS = Object.keys(LIMITS);
 const $ = (id) => document.getElementById(id);
 const form = $('form');
 let current = null;
+let viewKey = '';
 
 function fillForm(values) {
   for (const k of FIELDS) form.elements[k].value = values[k];
@@ -30,9 +31,9 @@ const svgEl = (tag, attrs = {}, parent) => {
   return el;
 };
 
-function renderPreview(parts) {
+function buildPartsSVG(parts, { pad: padOverride } = {}) {
   const b = bboxOf(parts.flatMap((p) => p.loops));
-  const pad = Math.max(b.z1 - b.z0, b.y1 - b.y0) * 0.08 || 10;
+  const pad = padOverride ?? (Math.max(b.z1 - b.z0, b.y1 - b.y0) * 0.08 || 10);
   const svg = svgEl('svg', {
     viewBox: `${b.z0 - pad} ${-b.y1 - pad} ${b.z1 - b.z0 + 2 * pad} ${b.y1 - b.y0 + 2 * pad}`,
     preserveAspectRatio: 'xMidYMid meet',
@@ -45,20 +46,74 @@ function renderPreview(parts) {
     svgEl('title', {}, path).textContent = `${p.name} — ${TIMBER_NAME[p.timber]} ${fmt(p.thickness)}`;
     for (const h of p.holes) svgEl('circle', { cx: h.z, cy: h.y, r: h.d / 2, class: 'hole' }, g);
   }
-  $('preview').replaceChildren(svg);
+  return { svg, bbox: b };
 }
 
-function renderPartOptions(result) {
-  const sel = $('viewPart');
-  const prev = sel.value;
-  const groups = groupedPartOptions(result.parts).map((g) => {
-    const og = document.createElement('optgroup');
-    og.label = g.group;
-    og.append(...g.options.map((o) => new Option(o.label, o.id)));
-    return og;
-  });
-  sel.replaceChildren(new Option('Full assembly', ''), ...groups);
-  sel.value = [...sel.querySelectorAll('option')].some((o) => o.value === prev) ? prev : '';
+function renderPreview(parts) {
+  const { svg, bbox } = buildPartsSVG(parts);
+  $('preview').replaceChildren(svg);
+  renderDimLine(bbox.z1 - bbox.z0);
+}
+
+function renderDimLine(depthMM) {
+  const left = document.createElement('span'); left.className = 'dim-line';
+  const right = document.createElement('span'); right.className = 'dim-line';
+  const label = document.createElement('span'); label.className = 'dim-label num';
+  label.textContent = `${Math.round(depthMM * 10) / 10} mm`;
+  $('dimline').replaceChildren(left, label, right);
+}
+
+function chipIcon(part) {
+  const b = bboxOf(part.loops);
+  const pad = Math.max(b.z1 - b.z0, b.y1 - b.y0) * 0.12 || 2;
+  return buildPartsSVG([part], { pad }).svg;
+}
+
+function tierOf(result, id) {
+  for (const g of groupedPartOptions(result.parts)) if (g.options.some((o) => o.id === id)) return g.tier;
+  return null;
+}
+
+function renderTabs(result) {
+  const activeTier = viewKey.startsWith('tier:') ? viewKey.slice(5) : (tierOf(result, viewKey) ?? '');
+  const groups = groupedPartOptions(result.parts);
+  const tabs = [{ tier: '', label: 'Full assembly' }, ...TIERS.filter((t) => groups.some((g) => g.tier === t.tier))];
+  $('tabs').replaceChildren(...tabs.map((t) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tab'; b.textContent = t.label; b.setAttribute('role', 'tab');
+    const selected = t.tier === '' ? viewKey === '' : activeTier === t.tier;
+    b.setAttribute('aria-selected', String(selected));
+    b.addEventListener('click', () => { viewKey = t.tier === '' ? '' : `tier:${t.tier}`; refreshView(); });
+    return b;
+  }));
+  renderChips(result, activeTier);
+}
+
+function renderChips(result, activeTier) {
+  const el = $('chips');
+  const group = groupedPartOptions(result.parts).find((g) => g.tier === activeTier);
+  if (!group) { el.hidden = true; el.replaceChildren(); return; }
+  el.hidden = false;
+  const byId = Object.fromEntries(result.parts.map((p) => [p.id, p]));
+  el.replaceChildren(...group.options.map((o) => {
+    const part = byId[o.id];
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', String(viewKey === o.id));
+    b.title = o.label;
+    b.append(chipIcon(part));
+    const label = document.createElement('span'); label.className = 'chip-label';
+    label.textContent = part.tier === 'sides' ? part.name : part.name.replace(/^(Bottom|Middle|Top) tier\s*/, '');
+    b.append(label);
+    if (part.qty > 1) { const q = document.createElement('span'); q.className = 'qty'; q.textContent = `×${part.qty}`; b.append(q); }
+    b.addEventListener('click', () => { viewKey = o.id; refreshView(); });
+    return b;
+  }));
+}
+
+function refreshView() {
+  renderTabs(current.result);
+  renderPreview(selectParts(current.result.parts, viewKey));
 }
 
 function renderCutList(result) {
@@ -78,8 +133,7 @@ function renderTimberOptions(result) {
   const groups = byTimber(result.parts);
   sel.replaceChildren(...Object.keys(groups).map((t) => {
     const thick = groups[t][0].thickness;
-    const o = new Option(`${TIMBER_NAME[t]} ${fmt(thick)}`, t);
-    return o;
+    return new Option(`${TIMBER_NAME[t]} ${fmt(thick)}`, t);
   }));
   if (prev && groups[prev]) sel.value = prev;
 }
@@ -100,9 +154,8 @@ function update() {
   const result = buildBox(params);
   current = { params, result };
   const o = result.overall;
-  $('overall').textContent = `Overall ${fmt(o.H)} high × ${fmt(o.D)} deep × ${fmt(o.W)} wide`;
-  renderPartOptions(result);
-  renderPreview(selectParts(result.parts, $('viewPart').value));
+  $('overall').textContent = `${fmt(o.H)} × ${fmt(o.D)} × ${fmt(o.W)}`;
+  refreshView();
   renderCutList(result);
   renderTimberOptions(result);
   const w = $('warnings');
@@ -132,20 +185,22 @@ function download(name, data, type) {
 }
 
 form.addEventListener('input', schedule);
-$('viewPart').addEventListener('input', () => renderPreview(selectParts(current.result.parts, $('viewPart').value)));
 
-$('reset').addEventListener('click', () => { fillForm(DEFAULTS); update(); });
+$('reset').addEventListener('click', () => { fillForm(DEFAULTS); viewKey = ''; update(); });
 
 $('pdf').addEventListener('click', () => {
+  update();
   const doc = toPDF(current.result, current.params);
   download(`claude-box-${sizeTag()}-templates.pdf`, doc.output('blob'));
 });
 
 const cncParts = () => byTimber(current.result.parts)[$('timber').value] ?? [];
 $('svg').addEventListener('click', () => {
+  update();
   download(`claude-box-${sizeTag()}-${$('timber').value}.svg`, toSVG(cncParts(), { title: `Claude Box ${$('timber').value}` }), 'image/svg+xml');
 });
 $('dxf').addEventListener('click', () => {
+  update();
   download(`claude-box-${sizeTag()}-${$('timber').value}.dxf`, toDXF(cncParts()), 'application/dxf');
 });
 

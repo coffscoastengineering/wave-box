@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildBox } from '../src/parts.js';
 import { validate } from '../src/params.js';
-import { partOptions, groupedPartOptions, selectParts } from '../src/ui/view-model.js';
+import { partOptions, groupedPartOptions, selectParts, TIERS } from '../src/ui/view-model.js';
 
 const { parts } = buildBox(validate({}).params);
 
@@ -25,8 +25,15 @@ test('partOptions labels show quantity for parts cut more than once', () => {
 test('groupedPartOptions groups by tier in box order, walnut last', () => {
   const groups = groupedPartOptions(parts);
   assert.deepEqual(groups.map((g) => g.group), ['Bottom tier', 'Middle tier', 'Top tier', 'Walnut sides']);
+  assert.deepEqual(groups.map((g) => g.tier), ['bottom', 'middle', 'top', 'sides']);
   const total = groups.reduce((n, g) => n + g.options.length, 0);
   assert.equal(total, partOptions(parts).length);
+});
+
+test('TIERS lists tabs in box order with labels matching groupedPartOptions', () => {
+  assert.deepEqual(TIERS.map((t) => t.tier), ['bottom', 'middle', 'top', 'sides']);
+  const labelByTier = Object.fromEntries(groupedPartOptions(parts).map((g) => [g.tier, g.group]));
+  for (const t of TIERS) assert.equal(t.label, labelByTier[t.tier]);
 });
 
 test('groupedPartOptions options match partOptions labels for that part', () => {
@@ -47,5 +54,16 @@ test('selectParts with an id returns only that part', () => {
 
 test('selectParts with an id no longer present falls back to the full assembly', () => {
   const sel = selectParts(parts, 'not.a.real.part');
+  assert.equal(sel.length, parts.filter((p) => p.loops.length).length);
+});
+
+test('selectParts with a tier: key returns only that tier\'s parts', () => {
+  const sel = selectParts(parts, 'tier:bottom');
+  assert.ok(sel.length > 1);
+  assert.ok(sel.every((p) => p.tier === 'bottom'));
+});
+
+test('selectParts with an unknown tier: key falls back to the full assembly', () => {
+  const sel = selectParts(parts, 'tier:nonexistent');
   assert.equal(sel.length, parts.filter((p) => p.loops.length).length);
 });
