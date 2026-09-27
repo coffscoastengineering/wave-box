@@ -8,7 +8,7 @@ export function partOptions(parts) {
   return drawable(parts).map(optionFor);
 }
 
-const TIER_GROUP = { bottom: 'Bottom tier', middle: 'Middle tier', top: 'Top tier', sides: 'Walnut sides' };
+const TIER_GROUP = { bottom: 'Bottom tier', middle: 'Middle tier', top: 'Top tier', sides: 'Outer sides' };
 
 export function groupedPartOptions(parts) {
   return Object.entries(TIER_GROUP)

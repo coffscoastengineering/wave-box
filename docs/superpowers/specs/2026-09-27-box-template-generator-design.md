@@ -2,6 +2,10 @@
 
 Date: 2026-09-27
 Status: approved (design sections 1–5 approved in chat)
+Amendment 2026-09-27: owner decided to drop CNC/laser (SVG/DXF) export and the
+US Letter paper size — PDF-only, A4/A3/A2. Sections below are left as
+originally written for history; the current build (`git log`, `test/`) is
+authoritative over this note.
 
 ## Goal
 
@@ -10,7 +14,7 @@ drawers, walnut wave-shaped sides) at any size, without Fusion 360. A single
 standalone HTML page takes size + timber thickness inputs and produces:
 
 - 1:1 tiled printable PDF templates (A4 / Letter) for bandsaw / scroll saw
-- SVG + DXF vector files for CNC / laser
+- SVG + DXF vector files for CNC / laser [dropped, see amendment above]
 - a cut list and a short assembly sheet
 
 Success: a maker picks a size, prints, checks the scale square with a ruler,

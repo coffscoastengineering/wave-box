@@ -1,6 +1,6 @@
 import { bboxOf } from './geom.js';
 
-export const TIMBER_NAME = { walnut: 'Walnut', carcass: 'Carcass timber', drawer: 'Drawer timber', dowel: 'Dowel' };
+export const TIMBER_NAME = { walnut: 'Side timber', carcass: 'Carcass timber', drawer: 'Drawer timber', dowel: 'Dowel' };
 export const BLOCK_ALLOWANCE = 5;
 
 const trim = (v) => String(Number(v.toFixed(1)));

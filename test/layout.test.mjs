@@ -3,8 +3,6 @@ import assert from 'node:assert/strict';
 import { buildBox } from '../src/parts.js';
 import { validate } from '../src/params.js';
 import { layout, placePoint } from '../src/layout.js';
-import { toSVG } from '../src/export-svg.js';
-import { toDXF, byTimber } from '../src/export-dxf.js';
 import { labelLines } from '../src/labels.js';
 
 const { parts } = buildBox(validate({}).params);
@@ -30,33 +28,6 @@ test('layout places every drawable part once without overlap', () => {
     const [x, y] = placePoint(p, it);
     assert.ok(x >= it.dz - 1e-6 && x <= it.dz + it.w + 1e-6 && y >= it.dy + 20 - 1e-6 && y <= it.dy + it.h + 1e-6);
   }
-});
-
-test('svg is sized in mm with one path per loop and one circle per hole', () => {
-  const svg = toSVG(drawable, { title: 'test' });
-  assert.match(svg, /^<\?xml/);
-  assert.match(svg, /width="[\d.]+mm"/);
-  const loops = drawable.reduce((n, p) => n + p.loops.length, 0);
-  const holes = drawable.reduce((n, p) => n + p.holes.length, 0);
-  assert.equal((svg.match(/<path /g) || []).length, loops);
-  assert.equal((svg.match(/<circle /g) || []).length, holes);
-});
-
-test('dxf is R12 with a closed polyline per loop and circles for holes', () => {
-  const dxf = toDXF(drawable);
-  assert.ok(dxf.startsWith('0\nSECTION'));
-  assert.ok(dxf.trimEnd().endsWith('0\nEOF'));
-  assert.match(dxf, /\$ACADVER\n1\nAC1009/);
-  const loops = drawable.reduce((n, p) => n + p.loops.length, 0);
-  assert.equal((dxf.match(/\nPOLYLINE\n/g) || []).length, loops);
-  assert.equal((dxf.match(/\nPOLYLINE\n8\nCUT\n66\n1\n70\n1\n/g) || []).length, loops);
-  assert.equal((dxf.match(/\nCIRCLE\n/g) || []).length, drawable.reduce((n, p) => n + p.holes.length, 0));
-});
-
-test('byTimber groups drawable parts', () => {
-  const g = byTimber(drawable);
-  assert.deepEqual(Object.keys(g).sort(), ['carcass', 'drawer', 'walnut']);
-  assert.equal(g.walnut.length, 1);
 });
 
 test('labels are in millimetres', () => {

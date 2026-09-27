@@ -175,7 +175,7 @@ export function buildBox(params) {
     add(`${tier}.drawerBack`, `${D_} back`, tier, 'drawer', 'curved', td, xs.inner, dBack);
   }
 
-  add('sides.walnut', 'Walnut side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels });
+  add('sides.walnut', 'Side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels });
 
   const endsUnion = union(...['bottom', 'middle', 'top'].map((t) => toPaths([scaleLoop(MASTER.tiers[t].env, sz, sy)])));
   for (const [i, d] of dowels.entries()) {

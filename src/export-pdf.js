@@ -32,7 +32,7 @@ function coverPage(doc, result, params, pageW, pageH) {
   };
   const o = result.overall;
   line(`Overall ${fmt(o.H)} high × ${fmt(o.D)} deep × ${fmt(o.W)} wide`, true, 11);
-  line(`Carcass width ${fmt(params.W)} · walnut ${fmt(params.walnut)} · carcass ${fmt(params.carcass)} · drawers/lid ${fmt(params.drawer)} · stand-off ${fmt(params.gap)}`);
+  line(`Carcass width ${fmt(params.W)} · side ${fmt(params.walnut)} · carcass ${fmt(params.carcass)} · drawers/lid ${fmt(params.drawer)} · stand-off ${fmt(params.gap)}`);
   y += 3;
   line('PRINT AT 100 % ("Actual size"). Do not use "Fit to page". Check the square below with a ruler before cutting anything.', true, 9, [170, 0, 0]);
 
@@ -85,7 +85,7 @@ function assemblyPage(doc, result, params, pageW, pageH) {
     if (p.timber === 'walnut') doc.setGState(new doc.GState({ opacity: 1 }));
   }
   doc.setFontSize(8); doc.setTextColor(80);
-  doc.text('Side view (front of box on the left). Walnut side shown see-through over the carcass (tan) and drawers/lid (blue).', MARGIN, box.y + box.h + 5);
+  doc.text('Side view (front of box on the left). Side timber shown see-through over the carcass (tan) and drawers/lid (blue).', MARGIN, box.y + box.h + 5);
   let y = box.y + box.h + 12;
   doc.setTextColor(0); doc.setFontSize(9.5);
   assemblySteps(params).forEach((t, i) => {
@@ -163,7 +163,7 @@ function templatePages(doc, result, params, pageW, pageH) {
 }
 
 export function toPDF(result, params, { compress = true } = {}) {
-  const format = { Letter: 'letter', A4: 'a4', A3: 'a3', A2: 'a2' }[params.paper] ?? 'a4';
+  const format = { A4: 'a4', A3: 'a3', A2: 'a2' }[params.paper] ?? 'a4';
   const doc = new jsPDF({ unit: 'mm', format, orientation: 'portrait', compress });
   const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
   doc.setProperties({ title: 'Claude Box templates', creator: 'Claude Box template generator' });

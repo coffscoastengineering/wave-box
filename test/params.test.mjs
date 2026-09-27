@@ -35,7 +35,8 @@ test('numeric strings parse', () => {
 });
 
 test('known paper sizes pass through, unknown falls back to A4', () => {
-  for (const p of ['A4', 'A3', 'A2', 'Letter']) assert.equal(validate({ paper: p }).params.paper, p);
+  for (const p of ['A4', 'A3', 'A2']) assert.equal(validate({ paper: p }).params.paper, p);
+  assert.equal(validate({ paper: 'Letter' }).params.paper, 'A4');
   assert.equal(validate({ paper: 'Tabloid' }).params.paper, 'A4');
 });
 

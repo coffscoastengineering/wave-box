@@ -28,7 +28,7 @@
 
     <fieldset>
       <legend><i class="bracket" aria-hidden="true"></i>Timber thickness <span class="legend-unit">mm</span></legend>
-      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Walnut sides</label><input id="walnut" name="walnut" type="number" inputmode="decimal" class="num"><p class="err" id="walnut-err" role="alert"></p></div>
+      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Side timber</label><input id="walnut" name="walnut" type="number" inputmode="decimal" class="num"><p class="err" id="walnut-err" role="alert"></p></div>
       <div class="field"><label for="carcass"><i class="sw carcass" aria-hidden="true"></i>Carcass</label><input id="carcass" name="carcass" type="number" inputmode="decimal" class="num"><p class="err" id="carcass-err" role="alert"></p></div>
       <div class="field"><label for="drawer"><i class="sw drawer" aria-hidden="true"></i>Drawers &amp; lid</label><input id="drawer" name="drawer" type="number" inputmode="decimal" class="num"><p class="err" id="drawer-err" role="alert"></p></div>
       <div class="field"><label for="gap">Side stand-off gap</label><input id="gap" name="gap" type="number" inputmode="decimal" class="num"><p class="err" id="gap-err" role="alert"></p></div>
@@ -40,7 +40,6 @@
         <label><input type="radio" name="paper" value="A4" checked><span>A4</span></label>
         <label><input type="radio" name="paper" value="A3"><span>A3</span></label>
         <label><input type="radio" name="paper" value="A2"><span>A2</span></label>
-        <label><input type="radio" name="paper" value="Letter"><span>Letter</span></label>
       </div>
     </fieldset>
 
@@ -61,7 +60,7 @@
       <div id="dimline" class="dimline" aria-hidden="true"></div>
 
       <ul class="legend" aria-label="Legend">
-        <li><i class="sw walnut"></i>Walnut side, see-through</li>
+        <li><i class="sw walnut"></i>Side, see-through</li>
         <li><i class="sw carcass"></i>Carcass</li>
         <li><i class="sw drawer"></i>Drawers &amp; lid</li>
         <li><i class="sw hole"></i>Ø20 dowel</li>
@@ -75,12 +74,6 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
         Download printable templates (PDF)
       </button>
-      <div class="cnc">
-        <label for="timber">CNC / laser files</label>
-        <select id="timber"></select>
-        <button type="button" id="svg" class="secondary">SVG</button>
-        <button type="button" id="dxf" class="secondary">DXF</button>
-      </div>
     </div>
     <p class="hint">Print the PDF at <strong>100 % / “Actual size”</strong> and check the scale square with a ruler before cutting.</p>
 

@@ -1,8 +1,6 @@
 import { validate, DEFAULTS, LIMITS } from '../params.js';
 import { buildBox } from '../parts.js';
 import { toPDF } from '../export-pdf.js';
-import { toSVG } from '../export-svg.js';
-import { toDXF, byTimber } from '../export-dxf.js';
 import { cutList } from '../cutlist.js';
 import { fmt, TIMBER_NAME } from '../labels.js';
 import { bboxOf } from '../geom.js';
@@ -127,17 +125,6 @@ function renderCutList(result) {
   }));
 }
 
-function renderTimberOptions(result) {
-  const sel = $('timber');
-  const prev = sel.value;
-  const groups = byTimber(result.parts);
-  sel.replaceChildren(...Object.keys(groups).map((t) => {
-    const thick = groups[t][0].thickness;
-    return new Option(`${TIMBER_NAME[t]} ${fmt(thick)}`, t);
-  }));
-  if (prev && groups[prev]) sel.value = prev;
-}
-
 function update() {
   const { params, errors } = validate(readForm());
   let bad = false;
@@ -148,7 +135,7 @@ function update() {
     $(`${k}-err`).textContent = msg;
     if (msg) bad = true;
   }
-  for (const id of ['pdf', 'svg', 'dxf']) $(id).disabled = bad;
+  $('pdf').disabled = bad;
   if (bad) return;
 
   const result = buildBox(params);
@@ -157,7 +144,6 @@ function update() {
   $('overall').textContent = `${fmt(o.H)} × ${fmt(o.D)} × ${fmt(o.W)}`;
   refreshView();
   renderCutList(result);
-  renderTimberOptions(result);
   const w = $('warnings');
   w.hidden = !result.warnings.length;
   w.replaceChildren();
@@ -192,16 +178,6 @@ $('pdf').addEventListener('click', () => {
   update();
   const doc = toPDF(current.result, current.params);
   download(`claude-box-${sizeTag()}-templates.pdf`, doc.output('blob'));
-});
-
-const cncParts = () => byTimber(current.result.parts)[$('timber').value] ?? [];
-$('svg').addEventListener('click', () => {
-  update();
-  download(`claude-box-${sizeTag()}-${$('timber').value}.svg`, toSVG(cncParts(), { title: `Claude Box ${$('timber').value}` }), 'image/svg+xml');
-});
-$('dxf').addEventListener('click', () => {
-  update();
-  download(`claude-box-${sizeTag()}-${$('timber').value}.dxf`, toDXF(cncParts()), 'application/dxf');
 });
 
 fillForm(DEFAULTS);

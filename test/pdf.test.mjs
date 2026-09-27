@@ -52,17 +52,9 @@ test('A4 pdf pages are exactly A4 and there is a 100 mm scale square', () => {
   assert.match(doc.output(), / 283\.4645\d* -283\.4645\d* re/);
 });
 
-test('Letter pdf uses letter pages with the same 100 mm square', () => {
-  const { params, result } = make({ paper: 'Letter' });
-  const doc = toPDF(result, params, { compress: false });
-  const [w, h] = pageMM(doc, 1);
-  assert.ok(Math.abs(w - 215.9) < 0.01 && Math.abs(h - 279.4) < 0.01);
-  assert.match(doc.output(), / 283\.4645\d* -283\.4645\d* re/);
-});
-
-test('A3 and A2 pages are the right size and unknown paper falls back to A4', () => {
+test('A3 and A2 pages are the right size, and Letter/unknown paper falls back to A4', () => {
   const { result } = make();
-  const sizes = { A3: [297, 420], A2: [420, 594], A4: [210, 297] };
+  const sizes = { A3: [297, 420], A2: [420, 594], A4: [210, 297], Letter: [210, 297], Tabloid: [210, 297] };
   for (const [paper, [w, h]] of Object.entries(sizes)) {
     const { params } = validate({ paper });
     const [pw, ph] = pageMM(toPDF(result, params, { compress: false }), 1);

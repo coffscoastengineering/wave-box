@@ -11,7 +11,7 @@ test('partOptions lists every drawable part once, dowel excluded', () => {
   const drawable = parts.filter((p) => p.loops.length);
   assert.equal(opts.length, drawable.length);
   assert.ok(!opts.some((o) => o.id === 'dowel'));
-  assert.ok(opts.every((o) => o.label.includes(o.id === 'sides.walnut' ? 'Walnut' : '')));
+  assert.ok(opts.every((o) => o.label.includes(o.id === 'sides.walnut' ? 'Side' : '')));
 });
 
 test('partOptions labels show quantity for parts cut more than once', () => {
@@ -22,9 +22,9 @@ test('partOptions labels show quantity for parts cut more than once', () => {
   assert.doesNotMatch(floor.label, /×/);
 });
 
-test('groupedPartOptions groups by tier in box order, walnut last', () => {
+test('groupedPartOptions groups by tier in box order, sides last', () => {
   const groups = groupedPartOptions(parts);
-  assert.deepEqual(groups.map((g) => g.group), ['Bottom tier', 'Middle tier', 'Top tier', 'Walnut sides']);
+  assert.deepEqual(groups.map((g) => g.group), ['Bottom tier', 'Middle tier', 'Top tier', 'Outer sides']);
   assert.deepEqual(groups.map((g) => g.tier), ['bottom', 'middle', 'top', 'sides']);
   const total = groups.reduce((n, g) => n + g.options.length, 0);
   assert.equal(total, partOptions(parts).length);
