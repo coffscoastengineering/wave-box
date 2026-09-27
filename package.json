@@ -17,5 +17,9 @@
   "dependencies": {
     "clipper-lib": "^6.4.2",
     "jspdf": "^4.2.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "pdfjs-dist": "^6.3.289"
   }
 }
