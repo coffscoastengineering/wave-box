@@ -10,9 +10,9 @@ export function byTimber(parts) {
 }
 
 // AutoCAD R12 ASCII DXF, millimetres. Sheet y is flipped so the drawing reads the same way up as the SVG/PDF.
-export function toDXF(parts, { units = 'mm' } = {}) {
+export function toDXF(parts) {
   const labelH = 16;
-  const L = layout(parts, { gap: 12, maxWidth: 800, labelH, labelW: (p) => estimateLabelWidth(p, units, 3) });
+  const L = layout(parts, { gap: 12, maxWidth: 800, labelH, labelW: (p) => estimateLabelWidth(p, 3) });
   const out = [];
   const w = (...pairs) => { for (let i = 0; i < pairs.length; i += 2) out.push(String(pairs[i]), String(pairs[i + 1])); };
 
@@ -34,7 +34,7 @@ export function toDXF(parts, { units = 'mm' } = {}) {
       const [x, y] = at([h.z, h.y]);
       w(0, 'CIRCLE', 8, 'HOLES', 10, x, 20, y, 30, 0, 40, n(h.d / 2));
     }
-    labelLines(it.part, units).forEach((line, i) => {
+    labelLines(it.part).forEach((line, i) => {
       w(0, 'TEXT', 8, 'LABELS', 10, n(it.dz), 20, n(-(it.dy + 4 + i * 5)), 30, 0, 40, 3.5, 1, line.replace(/[—]/g, '-'));
     });
   }

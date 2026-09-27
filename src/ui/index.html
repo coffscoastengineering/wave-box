@@ -15,26 +15,18 @@
 <main class="layout">
   <form id="form" class="panel" novalidate aria-label="Box size and timber">
     <fieldset>
-      <legend>Units</legend>
-      <div class="seg" role="radiogroup" aria-label="Units">
-        <label><input type="radio" name="units" value="mm" checked><span>mm</span></label>
-        <label><input type="radio" name="units" value="in"><span>inches</span></label>
-      </div>
+      <legend>Box size (mm)</legend>
+      <div class="field"><label for="H">Height</label><input id="H" name="H" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="H-err" role="alert"></p></div>
+      <div class="field"><label for="D">Depth (front to back)</label><input id="D" name="D" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="D-err" role="alert"></p></div>
+      <div class="field"><label for="W">Carcass width</label><input id="W" name="W" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="W-err" role="alert"></p></div>
     </fieldset>
 
     <fieldset>
-      <legend>Box size</legend>
-      <div class="field"><label for="H">Height</label><input id="H" name="H" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="H-err" role="alert"></p></div>
-      <div class="field"><label for="D">Depth (front to back)</label><input id="D" name="D" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="D-err" role="alert"></p></div>
-      <div class="field"><label for="W">Carcass width</label><input id="W" name="W" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="W-err" role="alert"></p></div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Timber thickness</legend>
-      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Walnut sides</label><input id="walnut" name="walnut" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="walnut-err" role="alert"></p></div>
-      <div class="field"><label for="carcass"><i class="sw carcass" aria-hidden="true"></i>Carcass</label><input id="carcass" name="carcass" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="carcass-err" role="alert"></p></div>
-      <div class="field"><label for="drawer"><i class="sw drawer" aria-hidden="true"></i>Drawers &amp; lid</label><input id="drawer" name="drawer" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="drawer-err" role="alert"></p></div>
-      <div class="field"><label for="gap">Side stand-off gap</label><input id="gap" name="gap" type="number" inputmode="decimal"><span class="unit"></span><p class="err" id="gap-err" role="alert"></p></div>
+      <legend>Timber thickness (mm)</legend>
+      <div class="field"><label for="walnut"><i class="sw walnut" aria-hidden="true"></i>Walnut sides</label><input id="walnut" name="walnut" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="walnut-err" role="alert"></p></div>
+      <div class="field"><label for="carcass"><i class="sw carcass" aria-hidden="true"></i>Carcass</label><input id="carcass" name="carcass" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="carcass-err" role="alert"></p></div>
+      <div class="field"><label for="drawer"><i class="sw drawer" aria-hidden="true"></i>Drawers &amp; lid</label><input id="drawer" name="drawer" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="drawer-err" role="alert"></p></div>
+      <div class="field"><label for="gap">Side stand-off gap</label><input id="gap" name="gap" type="number" inputmode="decimal"><span class="unit">mm</span><p class="err" id="gap-err" role="alert"></p></div>
     </fieldset>
 
     <fieldset>

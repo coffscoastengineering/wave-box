@@ -90,7 +90,7 @@ Warnings (shown in UI, printed on PDF page 1):
 
 - Tiled PDF, true 1:1, A4 or Letter. Parts laid out on a virtual sheet,
   split into pages with 10 mm overlap, crosshair alignment marks, page grid
-  labels (A1, A2…), a 100 mm (or 4 in) scale-check square on page 1.
+  labels (A1, A2…), a 100 mm scale-check square on page 1.
   Every part labelled: name, qty, timber, thickness, grain arrow, length
   along x ("carve from block T × W × L" for curved parts), bevel angles at
   trimmed ends.
@@ -103,8 +103,8 @@ Warnings (shown in UI, printed on PDF page 1):
 ## 4. UI
 
 Single standalone HTML file (all JS/CSS/libraries inlined, works offline).
-Inputs left: H, D, W, walnut / carcass / drawer thickness, gap, units
-(mm / in), paper (A4 / Letter). Right: live side-view preview coloured by
+Inputs left (millimetres only — metric by owner decision 2026-09-27): H, D, W, walnut / carcass / drawer thickness, gap,
+paper (A4 / Letter). Right: live side-view preview coloured by
 timber, overall dimensions. Buttons: Download PDF, SVG, DXF. Warnings panel.
 
 ## 5. Testing
@@ -121,4 +121,4 @@ timber, overall dimensions. Buttons: Download PDF, SVG, DXF. Warnings panel.
 ## Out of scope
 
 Drawer count changes, other box shapes, optimal nesting, joinery beyond glue
-and dowels, inch-fraction timber presets.
+and dowels, imperial units.

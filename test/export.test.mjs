@@ -59,12 +59,12 @@ test('byTimber groups drawable parts', () => {
   assert.equal(g.walnut.length, 1);
 });
 
-test('labels switch units', () => {
+test('labels are in millimetres', () => {
   const floor = parts.find((p) => p.id === 'bottom.floor');
-  assert.ok(labelLines(floor, 'mm').join(' ').includes('288 mm'));
-  assert.ok(labelLines(floor, 'in').join(' ').includes('11.34"'));
+  assert.ok(labelLines(floor).join(' ').includes('288 mm'));
   const wall = parts.find((p) => p.id === 'bottom.wall');
-  assert.ok(labelLines(wall, 'mm').join(' ').toLowerCase().includes('block'));
+  assert.ok(labelLines(wall).join(' ').toLowerCase().includes('block'));
+  for (const p of drawable) assert.ok(!/"/.test(labelLines(p).join(' ')), p.id);
 });
 
 test('layout reserves label width so labels cannot overprint neighbours', () => {
@@ -78,7 +78,7 @@ test('layout reserves label width so labels cannot overprint neighbours', () => 
 
 test('curved part label is short and carries the block size', () => {
   const wall = parts.find((p) => p.id === 'bottom.wall');
-  const text = labelLines(wall, 'mm').join(' ');
+  const text = labelLines(wall).join(' ');
   assert.match(text, /block 288 × [\d.]+ × [\d.]+ mm/i);
-  assert.ok(Math.max(...labelLines(wall, 'mm').map((l) => l.length)) <= 60);
+  assert.ok(Math.max(...labelLines(wall).map((l) => l.length)) <= 60);
 });

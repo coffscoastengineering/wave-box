@@ -4,9 +4,9 @@ import { labelLines, estimateLabelWidth } from './labels.js';
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const n = (v) => Number(v.toFixed(3));
 
-export function toSVG(parts, { title = 'Claude Box templates', units = 'mm' } = {}) {
+export function toSVG(parts, { title = 'Claude Box templates' } = {}) {
   const M = 10, labelH = 16;
-  const L = layout(parts, { gap: 12, maxWidth: 800, labelH, labelW: (p) => estimateLabelWidth(p, units, 2) });
+  const L = layout(parts, { gap: 12, maxWidth: 800, labelH, labelW: (p) => estimateLabelWidth(p, 2) });
   const W = n(L.width + 2 * M), H = n(L.height + 2 * M);
   const cut = [], holes = [], labels = [];
   for (const it of L.items) {
@@ -18,7 +18,7 @@ export function toSVG(parts, { title = 'Claude Box templates', units = 'mm' } = 
       const [cx, cy] = at([h.z, h.y]);
       holes.push(`<circle cx="${cx}" cy="${cy}" r="${n(h.d / 2)}"/>`);
     }
-    labelLines(it.part, units).forEach((line, i) => {
+    labelLines(it.part).forEach((line, i) => {
       labels.push(`<text x="${n(it.dz + M)}" y="${n(it.dy + M + 4 + i * 5)}">${esc(line)}</text>`);
     });
   }

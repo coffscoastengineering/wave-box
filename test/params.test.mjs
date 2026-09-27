@@ -34,16 +34,16 @@ test('numeric strings parse', () => {
   assert.deepEqual(errors, {});
 });
 
-test('unknown units and paper fall back', () => {
-  const { params } = validate({ units: 'furlongs', paper: 'A3' });
-  assert.equal(params.units, 'mm');
-  assert.equal(params.paper, 'A4');
-  assert.equal(validate({ units: 'in', paper: 'Letter' }).params.units, 'in');
+test('unknown paper falls back to A4', () => {
+  assert.equal(validate({ paper: 'A3' }).params.paper, 'A4');
+  assert.equal(validate({ paper: 'Letter' }).params.paper, 'Letter');
 });
 
-test('values within 0.05 mm of a limit (inch round-trip) are accepted and snapped', () => {
-  const { params, errors } = validate({ D: 189.992, W: 119.99, carcass: 2.997, H: 600.011 });
-  assert.deepEqual(errors, {});
-  assert.equal(params.D, 190); assert.equal(params.W, 120); assert.equal(params.carcass, 3); assert.equal(params.H, 600);
-  assert.ok(validate({ D: 189.9 }).errors.D);
+test('metric only: no units setting exists', () => {
+  assert.ok(!('units' in DEFAULTS));
+  assert.ok(!('units' in validate({ units: 'in' }).params));
+});
+
+test('values just outside a limit are errors', () => {
+  assert.ok(validate({ D: 189.99 }).errors.D);
 });

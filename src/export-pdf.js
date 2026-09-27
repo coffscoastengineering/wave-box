@@ -24,7 +24,6 @@ function header(doc, title, pageW) {
 }
 
 function coverPage(doc, result, params, pageW, pageH) {
-  const u = params.units;
   header(doc, 'Claude Box — cutting templates', pageW);
   let y = MARGIN + 16;
   const line = (t, bold = false, size = 9, color = 0) => {
@@ -32,18 +31,18 @@ function coverPage(doc, result, params, pageW, pageH) {
     for (const l of doc.splitTextToSize(t, pageW - 2 * MARGIN - 65)) { doc.text(l, MARGIN, y); y += size * 0.45; }
   };
   const o = result.overall;
-  line(`Overall ${fmt(o.H, u)} high × ${fmt(o.D, u)} deep × ${fmt(o.W, u)} wide`, true, 11);
-  line(`Carcass width ${fmt(params.W, u)} · walnut ${fmt(params.walnut, u)} · carcass ${fmt(params.carcass, u)} · drawers/lid ${fmt(params.drawer, u)} · stand-off ${fmt(params.gap, u)}`);
+  line(`Overall ${fmt(o.H)} high × ${fmt(o.D)} deep × ${fmt(o.W)} wide`, true, 11);
+  line(`Carcass width ${fmt(params.W)} · walnut ${fmt(params.walnut)} · carcass ${fmt(params.carcass)} · drawers/lid ${fmt(params.drawer)} · stand-off ${fmt(params.gap)}`);
   y += 3;
   line('PRINT AT 100 % ("Actual size"). Do not use "Fit to page". Check the square below with a ruler before cutting anything.', true, 9, [170, 0, 0]);
 
-  const sq = u === 'in' ? 101.6 : 100;
+  const sq = 100;
   y += 3;
   const sy = y;
   doc.setDrawColor(0); doc.setLineWidth(0.3);
   doc.rect(MARGIN, sy, sq, sq);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(0);
-  doc.text(u === 'in' ? 'This square must measure 4 in × 4 in' : 'This square must measure 100 mm × 100 mm', MARGIN + 4, sy + 7);
+  doc.text('This square must measure 100 mm × 100 mm', MARGIN + 4, sy + 7);
 
   y = sy + sq + 7;
   if (result.warnings.length) {
@@ -65,7 +64,7 @@ function coverPage(doc, result, params, pageW, pageH) {
     doc.setDrawColor(225); doc.line(MARGIN, y - 2.5, pageW - MARGIN, y - 2.5);
   };
   row(heads, true);
-  for (const r of cutList(result.parts, u)) {
+  for (const r of cutList(result.parts)) {
     row([r.name, r.qty, r.timber, r.finished, [r.block ? `Block ${r.block}` : '', r.notes].filter(Boolean).join('. ')]);
   }
 }
@@ -108,7 +107,7 @@ function grainArrow(doc, x, y, grain) {
 
 function templatePages(doc, result, params, pageW, pageH) {
   const pw = pageW - 2 * MARGIN, ph = pageH - 2 * MARGIN;
-  const labelW = (part) => Math.max(...labelLines(part, params.units).map((t, i) => {
+  const labelW = (part) => Math.max(...labelLines(part).map((t, i) => {
     doc.setFont('helvetica', i ? 'normal' : 'bold'); doc.setFontSize(8);
     return doc.getTextWidth(t);
   })) + 2;
@@ -154,7 +153,7 @@ function templatePages(doc, result, params, pageW, pageH) {
       }
       const [lx, ly] = toPage([it.dz, it.dy]);
       doc.setTextColor(0); doc.setFontSize(8);
-      labelLines(it.part, params.units).forEach((t, i) => {
+      labelLines(it.part).forEach((t, i) => {
         doc.setFont('helvetica', i ? 'normal' : 'bold'); doc.text(t, lx, ly + 3.5 + i * 3.6);
       });
       grainArrow(doc, lx, ly + 17, it.part.grain);
