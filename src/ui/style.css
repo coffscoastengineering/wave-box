@@ -68,6 +68,9 @@ button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-v
 .preview-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
 .preview-head h2 { margin: 0; font-size: 18px; }
 .overall { margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.view-select { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; }
+.view-select label { color: var(--muted); }
+.view-select select { min-height: 44px; font: inherit; font-size: 14px; padding: 4px 8px; border: 1px solid #b9a894; border-radius: 6px; background: #fff; color: var(--ink); max-width: 100%; }
 .preview { aspect-ratio: 16 / 10; max-height: 52vh; width: 100%; margin-top: 8px; }
 .preview svg { width: 100%; height: 100%; display: block; }
 .preview .part { stroke: #3a2a1e; stroke-width: 1; vector-effect: non-scaling-stroke; transition: opacity 150ms ease-out; }

@@ -6,6 +6,7 @@ import { toDXF, byTimber } from '../export-dxf.js';
 import { cutList } from '../cutlist.js';
 import { fmt, TIMBER_NAME } from '../labels.js';
 import { bboxOf } from '../geom.js';
+import { partOptions, selectParts } from './view-model.js';
 
 const FIELDS = Object.keys(LIMITS);
 const $ = (id) => document.getElementById(id);
@@ -29,24 +30,29 @@ const svgEl = (tag, attrs = {}, parent) => {
   return el;
 };
 
-function renderPreview(result) {
-  const solid = result.parts.filter((p) => p.loops.length);
-  const b = bboxOf(solid.flatMap((p) => p.loops));
-  const pad = Math.max(b.z1 - b.z0, b.y1 - b.y0) * 0.08;
+function renderPreview(parts) {
+  const b = bboxOf(parts.flatMap((p) => p.loops));
+  const pad = Math.max(b.z1 - b.z0, b.y1 - b.y0) * 0.08 || 10;
   const svg = svgEl('svg', {
     viewBox: `${b.z0 - pad} ${-b.y1 - pad} ${b.z1 - b.z0 + 2 * pad} ${b.y1 - b.y0 + 2 * pad}`,
     preserveAspectRatio: 'xMidYMid meet',
   });
   const g = svgEl('g', { transform: 'scale(1,-1)' }, svg);
-  const order = [...solid.filter((p) => p.timber !== 'walnut'), ...solid.filter((p) => p.timber === 'walnut')];
+  const order = [...parts.filter((p) => p.timber !== 'walnut'), ...parts.filter((p) => p.timber === 'walnut')];
   for (const p of order) {
     const d = p.loops.map((l) => `M${l.map(([z, y]) => `${z.toFixed(2)} ${y.toFixed(2)}`).join('L')}Z`).join('');
     const path = svgEl('path', { d, class: `part ${p.timber}`, 'fill-rule': 'evenodd' }, g);
     svgEl('title', {}, path).textContent = `${p.name} — ${TIMBER_NAME[p.timber]} ${fmt(p.thickness)}`;
+    for (const h of p.holes) svgEl('circle', { cx: h.z, cy: h.y, r: h.d / 2, class: 'hole' }, g);
   }
-  const walnut = solid.find((p) => p.id === 'sides.walnut');
-  for (const h of walnut?.holes ?? []) svgEl('circle', { cx: h.z, cy: h.y, r: h.d / 2, class: 'hole' }, g);
   $('preview').replaceChildren(svg);
+}
+
+function renderPartOptions(result) {
+  const sel = $('viewPart');
+  const prev = sel.value;
+  sel.replaceChildren(new Option('Full assembly', ''), ...partOptions(result.parts).map((o) => new Option(o.label, o.id)));
+  sel.value = [...sel.options].some((o) => o.value === prev) ? prev : '';
 }
 
 function renderCutList(result) {
@@ -89,7 +95,8 @@ function update() {
   current = { params, result };
   const o = result.overall;
   $('overall').textContent = `Overall ${fmt(o.H)} high × ${fmt(o.D)} deep × ${fmt(o.W)} wide`;
-  renderPreview(result);
+  renderPartOptions(result);
+  renderPreview(selectParts(result.parts, $('viewPart').value));
   renderCutList(result);
   renderTimberOptions(result);
   const w = $('warnings');
@@ -119,6 +126,7 @@ function download(name, data, type) {
 }
 
 form.addEventListener('input', schedule);
+$('viewPart').addEventListener('input', () => renderPreview(selectParts(current.result.parts, $('viewPart').value)));
 
 $('reset').addEventListener('click', () => { fillForm(DEFAULTS); update(); });
 

@@ -60,6 +60,24 @@ test('Letter pdf uses letter pages with the same 100 mm square', () => {
   assert.match(doc.output(), / 283\.4645\d* -283\.4645\d* re/);
 });
 
+test('A3 and A2 pages are the right size and unknown paper falls back to A4', () => {
+  const { result } = make();
+  const sizes = { A3: [297, 420], A2: [420, 594], A4: [210, 297] };
+  for (const [paper, [w, h]] of Object.entries(sizes)) {
+    const { params } = validate({ paper });
+    const [pw, ph] = pageMM(toPDF(result, params, { compress: false }), 1);
+    assert.ok(Math.abs(pw - w) < 0.01 && Math.abs(ph - h) < 0.01, `${paper}: ${pw}×${ph}`);
+  }
+  assert.equal(validate({ paper: 'Tabloid' }).params.paper, 'A4');
+});
+
+test('A2 needs fewer template pages than A4 for the same box', () => {
+  const { result } = make();
+  const a4 = toPDF(result, validate({ paper: 'A4' }).params, { compress: false }).getNumberOfPages();
+  const a2 = toPDF(result, validate({ paper: 'A2' }).params, { compress: false }).getNumberOfPages();
+  assert.ok(a2 < a4, `A2 pages ${a2} should be fewer than A4 pages ${a4}`);
+});
+
 test('pdf is compressed by default', () => {
   const { params, result } = make();
   const small = toPDF(result, params).output('arraybuffer').byteLength;

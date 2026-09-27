@@ -34,9 +34,9 @@ test('numeric strings parse', () => {
   assert.deepEqual(errors, {});
 });
 
-test('unknown paper falls back to A4', () => {
-  assert.equal(validate({ paper: 'A3' }).params.paper, 'A4');
-  assert.equal(validate({ paper: 'Letter' }).params.paper, 'Letter');
+test('known paper sizes pass through, unknown falls back to A4', () => {
+  for (const p of ['A4', 'A3', 'A2', 'Letter']) assert.equal(validate({ paper: p }).params.paper, p);
+  assert.equal(validate({ paper: 'Tabloid' }).params.paper, 'A4');
 });
 
 test('metric only: no units setting exists', () => {

@@ -163,7 +163,7 @@ function templatePages(doc, result, params, pageW, pageH) {
 }
 
 export function toPDF(result, params, { compress = true } = {}) {
-  const format = params.paper === 'Letter' ? 'letter' : 'a4';
+  const format = { Letter: 'letter', A4: 'a4', A3: 'a3', A2: 'a2' }[params.paper] ?? 'a4';
   const doc = new jsPDF({ unit: 'mm', format, orientation: 'portrait', compress });
   const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
   doc.setProperties({ title: 'Claude Box templates', creator: 'Claude Box template generator' });

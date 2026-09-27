@@ -27,6 +27,6 @@ export function validate(raw = {}) {
       params[key] = v;
     }
   }
-  params.paper = raw.paper === 'Letter' ? 'Letter' : 'A4';
+  params.paper = ['Letter', 'A4', 'A3', 'A2'].includes(raw.paper) ? raw.paper : 'A4';
   return { params, errors };
 }

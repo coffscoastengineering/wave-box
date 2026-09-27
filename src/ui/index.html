@@ -33,6 +33,8 @@
       <legend>Paper</legend>
       <div class="seg" role="radiogroup" aria-label="Paper size">
         <label><input type="radio" name="paper" value="A4" checked><span>A4</span></label>
+        <label><input type="radio" name="paper" value="A3"><span>A3</span></label>
+        <label><input type="radio" name="paper" value="A2"><span>A2</span></label>
         <label><input type="radio" name="paper" value="Letter"><span>US Letter</span></label>
       </div>
     </fieldset>
@@ -46,8 +48,12 @@
         <h2>Side view</h2>
         <p id="overall" class="overall"></p>
       </div>
+      <div class="view-select">
+        <label for="viewPart">Show</label>
+        <select id="viewPart"><option value="">Full assembly</option></select>
+      </div>
       <div id="preview" class="preview" role="img" aria-label="Side view of the box"></div>
-      <ul class="legend" aria-label="Legend">
+      <ul class="legend" aria-label="Legend" id="legend">
         <li><i class="sw walnut"></i>Walnut side (see-through)</li>
         <li><i class="sw carcass"></i>Carcass</li>
         <li><i class="sw drawer"></i>Drawers &amp; lid</li>
