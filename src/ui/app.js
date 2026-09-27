@@ -107,6 +107,7 @@ function renderChips(result, activeTier) {
     b.addEventListener('click', () => { viewKey = o.id; refreshView(); });
     return b;
   }));
+  el.classList.toggle('scrollable', el.scrollWidth > el.clientWidth + 1);
 }
 
 function refreshView() {
@@ -148,9 +149,14 @@ function update() {
   w.hidden = !result.warnings.length;
   w.replaceChildren();
   if (result.warnings.length) {
+    const head = document.createElement('p'); head.className = 'warnings-head';
+    const icon = svgEl('svg', { viewBox: '0 0 20 20', 'aria-hidden': 'true' });
+    svgEl('path', { d: 'M10 3 1 18h18Z' }, icon);
+    svgEl('path', { d: 'M10 8.5v4M10 15h.01' }, icon);
+    head.append(icon, document.createTextNode('Check before cutting'));
     const ul = document.createElement('ul');
     for (const t of result.warnings) { const li = document.createElement('li'); li.textContent = t; ul.append(li); }
-    w.append(ul);
+    w.append(head, ul);
   }
 }
 
@@ -171,6 +177,7 @@ function download(name, data, type) {
 }
 
 form.addEventListener('input', schedule);
+window.addEventListener('resize', () => { if (current) refreshView(); });
 
 $('reset').addEventListener('click', () => { fillForm(DEFAULTS); viewKey = ''; update(); });
 
