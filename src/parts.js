@@ -232,6 +232,6 @@ export function buildBox(params) {
     loops: [], holes: [], bevels: [], grain: 'y', ref: null,
   });
 
-  const all = bboxOf(parts.flatMap((p) => p.loops));
+  const all = bboxOf(parts.filter((p) => p.kind !== 'plan').flatMap((p) => p.loops));
   return { parts, warnings, overall: { H: all.y1 - all.y0, D: all.z1 - all.z0, W: W + 2 * (gap + tw) } };
 }

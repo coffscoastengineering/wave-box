@@ -71,6 +71,14 @@ function overlaps(parts) {
 
 test('design size: no parts collide', () => assert.deepEqual(overlaps(design().parts), []));
 
+test('overall size reflects the real box, not the drilling guides\' length/depth coordinates', () => {
+  for (const [H, D] of [[150, 190], [600, 750], [300, 375], [220, 300]]) {
+    const { overall } = buildBox(validate({ H, D }).params);
+    assert.ok(Math.abs(overall.H - H) < 5, `H${H} D${D}: overall.H ${overall.H.toFixed(1)} far from ${H}`);
+    assert.ok(Math.abs(overall.D - D) < 5, `H${H} D${D}: overall.D ${overall.D.toFixed(1)} far from ${D}`);
+  }
+});
+
 const measuredThickness = (p, t) => {
   const P = toPaths(p.loops);
   return offset(P, -(t / 2 - 0.1)).length > 0 && offset(P, -(t / 2 + 0.1)).length === 0;
