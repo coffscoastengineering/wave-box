@@ -9,6 +9,10 @@ export const LIMITS = Object.freeze({
 
 export const CLEARANCE = 1.5;
 export const DOWEL_D = 20;
+// Fixed lengths measured from the real dowel bodies in the "Box Revision" Fusion
+// file, not scaled with timber thickness — matches the physical hardware as modeled.
+export const DOWEL_LEN_SIDE = 16;
+export const DOWEL_LEN_INTERTIER = 14;
 
 // All numeric values are millimetres.
 export function validate(raw = {}) {
