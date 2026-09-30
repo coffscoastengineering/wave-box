@@ -41,7 +41,7 @@ test('master tiers have envelopes and bands', () => {
 });
 
 test('every dowel lies inside the walnut outline', () => {
-  assert.equal(MASTER.dowels.length, 3);
+  assert.equal(MASTER.dowels.length, 4);
   for (const d of MASTER.dowels) {
     const tiny = rect(d.z - 0.1, d.y - 0.1, d.z + 0.1, d.y + 0.1);
     close(areaOf(inter(tiny, toPaths([MASTER.walnut]))), 0.04, 0.001, `dowel ${d.z},${d.y}`);

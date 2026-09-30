@@ -10,7 +10,7 @@ const drawable = parts.filter((p) => p.loops.length);
 
 test('walnut part carries dowel holes as circles, not polygon cut-outs', () => {
   const w = parts.find((p) => p.id === 'sides.walnut');
-  assert.equal(w.holes.length, 3);
+  assert.equal(w.holes.length, 4);
   assert.equal(w.loops.length, 1);
 });
 

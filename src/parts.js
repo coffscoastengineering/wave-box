@@ -188,7 +188,7 @@ export function buildBox(params) {
   }
   parts.push({
     id: 'dowel', name: `Dowel Ø${DOWEL_D}`, tier: 'sides', timber: 'dowel', kind: 'dowel', thickness: DOWEL_D,
-    x: [W / 2 - tc, W / 2 + gap + tw], qty: 3, length: tw + gap + tc, loops: [], holes: [], bevels: [], grain: 'x', ref: null,
+    x: [W / 2 - tc, W / 2 + gap + tw], qty: dowels.length, length: tw + gap + tc, loops: [], holes: [], bevels: [], grain: 'x', ref: null,
   });
 
   const all = bboxOf(parts.flatMap((p) => p.loops));

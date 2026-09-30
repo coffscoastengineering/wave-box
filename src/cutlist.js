@@ -38,7 +38,7 @@ export function assemblySteps(params) {
     'Glue up each tier: floor, top/shelf and back wall between its two carcass ends. Check it is square.',
     'Assemble each drawer: sides onto front, back and bottom. It should slide with about 1.5 mm clearance each side.',
     'Fit the lid to the top tier; it rests on the front edge of the top floor.',
-    `Stack the tiers with the gaps shown on the side view. Fit the side pieces ${g} out from the carcass ends: the dowels pass through the sides, across the ${g} stand-off and into the carcass ends. Use ${g} spacer blocks glued between each carcass end and the side piece (the middle tier has no dowel of its own).`,
+    `Stack the tiers with the gaps shown on the side view. Fit the side pieces ${g} out from the carcass ends on all three tiers: the dowels pass through the sides, across the ${g} stand-off and into the carcass ends.`,
     'Sand, round over the edges and finish with oil or wax.',
   ];
 }

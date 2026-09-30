@@ -34,7 +34,14 @@ const out = {
     top: { env: env('Top:1+Body:1+Component41:1'), y0: 200, y1: 299.8,
       wallTop: r3(bboxOf([find('Top:1+Body:1+Component37:1')]).y1) },
   },
-  dowels: master.circles.map((c) => ({ z: r3(c.c[0] + sketchDz + zShift), y: r3(c.c[1] + sketchDy), d: c.d })),
+  dowels: [
+    ...master.circles.map((c) => ({ z: r3(c.c[0] + sketchDz + zShift), y: r3(c.c[1] + sketchDy), d: c.d })),
+    // Middle tier has no dowel in the original Fusion sketch — owner asked for the same
+    // dowel + stand-off fixing on all three tiers instead of glued spacer blocks. Picked to
+    // sit centred in the middle tier's solid overlap of the walnut and carcass-end profiles
+    // (~34 mm clear of both edges at design size), matching the diameter of the other three.
+    { z: 120, y: 145, d: 20 },
+  ],
 };
 
 fs.writeFileSync(new URL('../src/master-data.js', import.meta.url),
