@@ -142,6 +142,14 @@ function syncPresetButtons() {
   });
 }
 
+function renderPageCounts(result, params) {
+  for (const el of document.querySelectorAll('.page-count')) {
+    const paper = el.dataset.paper;
+    const n = toPDF(result, { ...params, paper }).getNumberOfPages();
+    el.textContent = `${n} page${n === 1 ? '' : 's'}`;
+  }
+}
+
 function renderSafety(warnings) {
   const s = safetyStatus(warnings);
   const el = $('safety');
@@ -167,6 +175,7 @@ function update() {
   const o = result.overall;
   $('overall').textContent = `${fmt(o.H)} × ${fmt(o.D)} × ${fmt(o.W)}`;
   renderSafety(result.warnings);
+  renderPageCounts(result, params);
   refreshView();
   renderCutList(result);
   const w = $('warnings');

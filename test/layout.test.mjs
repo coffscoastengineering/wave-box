@@ -30,6 +30,19 @@ test('layout places every drawable part once without overlap', () => {
   }
 });
 
+test('layout height is never worse than plain row-shelving, and clearly better at some widths', () => {
+  // Row-shelving baseline heights for this exact input, measured before the hybrid packer
+  // existed. The hybrid tries both a shelf packer and a skyline packer and keeps whichever
+  // has the smaller area — never worse than shelf alone, often tighter.
+  const baseline = { 600: 966, 900: 677.1, 1400: 590.1 };
+  for (const [maxWidth, shelfHeight] of Object.entries(baseline)) {
+    const L = layout(drawable, { gap: 15, maxWidth: Number(maxWidth), labelH: 20 });
+    assert.ok(L.height <= shelfHeight + 0.5, `maxWidth ${maxWidth}: height ${L.height.toFixed(1)} worse than shelf baseline (${shelfHeight})`);
+  }
+  const wide = layout(drawable, { gap: 15, maxWidth: 1400, labelH: 20 });
+  assert.ok(wide.height < 590.1 * 0.7, `expected a clear win at maxWidth 1400, got height ${wide.height.toFixed(0)} vs shelf baseline 590.1`);
+});
+
 test('labels are in millimetres', () => {
   const floor = parts.find((p) => p.id === 'bottom.floor');
   assert.ok(labelLines(floor).join(' ').includes('288 mm'));

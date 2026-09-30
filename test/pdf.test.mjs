@@ -70,6 +70,20 @@ test('A2 needs fewer template pages than A4 for the same box', () => {
   assert.ok(a2 < a4, `A2 pages ${a2} should be fewer than A4 pages ${a4}`);
 });
 
+test('the hybrid packer never needs more pages than the old row-shelf packer, and needs fewer for A3/A2', () => {
+  const { result } = make();
+  // Row-shelf-only page counts at default size, recorded before the hybrid packer existed.
+  const baseline = { A4: 18, A3: 9, A2: 8 };
+  for (const [paper, shelfPages] of Object.entries(baseline)) {
+    const pages = toPDF(result, validate({ paper }).params, { compress: false }).getNumberOfPages();
+    assert.ok(pages <= shelfPages, `${paper}: ${pages} pages worse than row-shelf baseline (${shelfPages})`);
+  }
+  const a3 = toPDF(result, validate({ paper: 'A3' }).params, { compress: false }).getNumberOfPages();
+  const a2 = toPDF(result, validate({ paper: 'A2' }).params, { compress: false }).getNumberOfPages();
+  assert.ok(a3 < 9, `expected A3 to improve on the row-shelf baseline (9), got ${a3}`);
+  assert.ok(a2 < 8, `expected A2 to improve on the row-shelf baseline (8), got ${a2}`);
+});
+
 test('pdf is compressed by default', () => {
   const { params, result } = make();
   const small = toPDF(result, params).output('arraybuffer').byteLength;
