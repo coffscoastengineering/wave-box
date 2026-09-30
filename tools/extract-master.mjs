@@ -37,10 +37,14 @@ const out = {
   dowels: [
     ...master.circles.map((c) => ({ z: r3(c.c[0] + sketchDz + zShift), y: r3(c.c[1] + sketchDy), d: c.d })),
     // Middle tier has no dowel in the original Fusion sketch — owner asked for the same
-    // dowel + stand-off fixing on all three tiers instead of glued spacer blocks. Picked to
-    // sit centred in the middle tier's solid overlap of the walnut and carcass-end profiles
-    // (~34 mm clear of both edges at design size), matching the diameter of the other three.
-    { z: 120, y: 145, d: 20 },
+    // 2-dowel fixing pattern as the bottom tier instead of glued spacer blocks (a single
+    // dowel lets the side pivot around it while clamping, before the glue sets). Positions
+    // found by scanning the middle tier's solid overlap of the walnut and carcass-end
+    // profiles for the widest-clearance symmetric pair — both sit >12 mm clear of every
+    // edge at design size (the built-in warning still fires if a user's size shrinks that
+    // margin below 5 mm, same as the other three dowels).
+    { z: 102, y: 130, d: 20 },
+    { z: 122, y: 130, d: 20 },
   ],
 };
 

@@ -49,7 +49,7 @@ test('design size: part lengths along width', () => {
   assert.equal(byId['bottom.drawerSide'].qty, 2);
   assert.equal(byId['sides.walnut'].qty, 2);
   assert.equal(byId['dowel'].length, 26);
-  assert.equal(byId['dowel'].qty, 4);
+  assert.equal(byId['dowel'].qty, 5);
 });
 
 function overlaps(parts) {
