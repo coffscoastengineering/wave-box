@@ -15,6 +15,13 @@ export function blockDims(part) {
 }
 
 export function labelLines(part) {
+  if (part.kind === 'plan') {
+    return [
+      part.name,
+      `Do not cut — align against the board's own edges and drill ${part.holes.length}× Ø${part.holes[0]?.d ?? ''}`,
+      `Long edge = board length (${fmt(part.length)}); short edge = its own front/back edge`,
+    ];
+  }
   const lines = [`${part.name} — cut ${part.qty}`];
   const t = `${TIMBER_NAME[part.timber]} ${fmt(part.thickness)}`;
   if (part.kind === 'profile') {

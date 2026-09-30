@@ -73,7 +73,7 @@ function assemblyPage(doc, result, params, pageW, pageH) {
   doc.addPage();
   header(doc, 'Assembly', pageW);
   const box = { x: MARGIN, y: MARGIN + 14, w: pageW - 2 * MARGIN, h: (pageH - 2 * MARGIN) * 0.42 };
-  const solid = result.parts.filter((p) => p.loops.length);
+  const solid = result.parts.filter((p) => p.loops.length && p.kind !== 'plan');
   const b = bboxOf(solid.flatMap((p) => p.loops));
   const s = Math.min(box.w / (b.z1 - b.z0), box.h / (b.y1 - b.y0));
   const at = ([z, y]) => [box.x + (z - b.z0) * s, box.y + (b.y1 - y) * s];

@@ -9,6 +9,11 @@ export function cutList(parts) {
       row.notes = 'Hardwood dowel';
       return row;
     }
+    if (p.kind === 'plan') {
+      row.finished = '—';
+      row.notes = `Drilling guide, not a cut piece — print, align on the board and drill ${p.holes.length}× Ø${p.holes[0]?.d ?? ''}`;
+      return row;
+    }
     const b = bboxOf(p.loops);
     const depth = b.z1 - b.z0, height = b.y1 - b.y0;
     if (p.kind === 'profile') {
@@ -36,9 +41,10 @@ export function assemblySteps(params) {
     'Curved parts (back walls, drawer fronts and backs, lid): plane a solid block to the block size in the cut list, glue the template to the block end and bandsaw the curve along the full length. Sand to the line.',
     'Flat boards (floors, tops, drawer bottoms): rip to width with the listed end bevels and cut to length.',
     'Glue up each tier: floor, top/shelf and back wall between its two carcass ends. Check it is square.',
+    'Before gluing the bottom and middle tiers together, use the drilling guides (not cut from timber) to drill the inter-tier dowel holes in the bottom tier\'s top and the middle tier\'s floor. Do the same with the middle tier\'s top and top tier\'s floor. Align each guide against the board\'s own edges — the two boards at a seam use the same guide shape, so the holes line up.',
     'Assemble each drawer: sides onto front, back and bottom. It should slide with about 1.5 mm clearance each side.',
     'Fit the lid to the top tier; it rests on the front edge of the top floor.',
-    `Stack the tiers with the gaps shown on the side view. Fit the side pieces ${g} out from the carcass ends on all three tiers: the dowels pass through the sides, across the ${g} stand-off and into the carcass ends.`,
+    `Stack the tiers with the gaps shown on the side view. Fit the side pieces ${g} out from the carcass ends on all three tiers: the dowels pass through the sides, across the ${g} stand-off and into the carcass ends. Glue short dowels into the inter-tier holes to pin each tier to the next.`,
     'Sand, round over the edges and finish with oil or wax.',
   ];
 }

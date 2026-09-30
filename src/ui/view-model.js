@@ -19,13 +19,17 @@ export function groupedPartOptions(parts) {
 export const TIERS = Object.entries(TIER_GROUP).map(([tier, label]) => ({ tier, label }));
 
 // key: '' (full assembly) | 'tier:<tier>' (one tier) | '<part id>' (one part).
+// Drilling-guide ("plan") parts are 2D diagrams (length × depth, not the box's real z/y
+// position) — they're only meaningful selected on their own, never mixed into an assembly
+// or whole-tier view, where their coordinates would be plotted as if they were real position.
 export function selectParts(parts, key) {
   const solid = drawable(parts);
-  if (!key) return solid;
+  const assembly = () => solid.filter((p) => p.kind !== 'plan');
+  if (!key) return assembly();
   if (key.startsWith('tier:')) {
-    const sel = solid.filter((p) => p.tier === key.slice(5));
-    return sel.length ? sel : solid;
+    const sel = solid.filter((p) => p.tier === key.slice(5) && p.kind !== 'plan');
+    return sel.length ? sel : assembly();
   }
   const one = solid.filter((p) => p.id === key);
-  return one.length ? one : solid;
+  return one.length ? one : assembly();
 }

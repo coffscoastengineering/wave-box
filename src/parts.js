@@ -73,6 +73,33 @@ function boardBevels(loops) {
   return [ang(Math.min(...top) - Math.min(...bot)), ang(Math.max(...top) - Math.max(...bot))];
 }
 
+// A drilling guide for one board's face at an inter-tier seam: a flat rectangle (length ×
+// depth, matching the board's own outline) with the 4 dowel holes marked. loops/holes reuse
+// the generic z/y point fields as (length-position, depth-position) — this part has no
+// height axis, so nothing else in the pipeline needs to treat it specially.
+function addDrillGuide(parts, warnings, seam, sz, id, name, tier, boardId) {
+  const board = parts.find((p) => p.id === boardId);
+  if (!board) return;
+  const b = bboxOf(board.loops);
+  const xOff = (seam.xDesign / seam.halfLenDesign) * (board.length / 2);
+  const cx = board.length / 2;
+  const loop = [[0, b.z0], [board.length, b.z0], [board.length, b.z1], [0, b.z1]];
+  const holes = [];
+  for (const xSign of [-1, 1]) for (const zDesign of seam.zs) {
+    const x = cx + xSign * xOff, z = zDesign * sz;
+    holes.push({ z: x, y: z, d: seam.d });
+    const marginX = Math.min(x, board.length - x) - seam.d / 2;
+    const marginZ = Math.min(z - b.z0, b.z1 - z) - seam.d / 2;
+    if (marginX < MIN_DOWEL_MARGIN || marginZ < MIN_DOWEL_MARGIN) {
+      warnings.push(`${name} hole is within ${MIN_DOWEL_MARGIN} mm of an edge — it may break out. Increase the size.`);
+    }
+  }
+  parts.push({
+    id, name, tier, timber: 'carcass', kind: 'plan', thickness: board.thickness, x: board.x,
+    qty: 1, length: board.length, loops: [loop], holes, bevels: [], grain: 'plan', ref: null,
+  });
+}
+
 export function buildBox(params) {
   const { H, D, W, walnut: tw, carcass: tc, drawer: td, gap } = params;
   const clr = CLEARANCE;
@@ -174,6 +201,12 @@ export function buildBox(params) {
     add(`${tier}.drawerBottom`, `${D_} bottom`, tier, 'drawer', 'board', td, xs.inner, dBottom);
     add(`${tier}.drawerBack`, `${D_} back`, tier, 'drawer', 'curved', td, xs.inner, dBack);
   }
+
+  const [bottomMiddleSeam, middleTopSeam] = MASTER.interTierSeams;
+  addDrillGuide(parts, warnings, bottomMiddleSeam, sz, 'bottom.topDrill', 'Bottom/middle seam drill guide', 'bottom', 'bottom.top');
+  addDrillGuide(parts, warnings, bottomMiddleSeam, sz, 'middle.floorDrill', 'Bottom/middle seam drill guide', 'middle', 'middle.floor');
+  addDrillGuide(parts, warnings, middleTopSeam, sz, 'middle.topDrill', 'Middle/top seam drill guide', 'middle', 'middle.top');
+  addDrillGuide(parts, warnings, middleTopSeam, sz, 'top.floorDrill', 'Middle/top seam drill guide', 'top', 'top.floor');
 
   add('sides.walnut', 'Side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels });
 

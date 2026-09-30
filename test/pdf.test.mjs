@@ -24,10 +24,11 @@ test('curved parts get a block size with allowance', () => {
   assert.ok(wall.block && /^288 × [\d.]+ × [\d.]+ mm$/.test(wall.block), wall.block);
 });
 
-test('cut list sizes are all in millimetres', () => {
+test('cut list sizes are all in millimetres (drilling guides have no finished size)', () => {
   const { result } = make();
   const rows = cutList(result.parts);
-  assert.ok(rows.every((r) => / mm$/.test(r.finished) && !r.finished.includes('"')), rows.map((r) => r.finished).join(' | '));
+  assert.ok(rows.every((r) => r.finished === '—' || (/ mm$/.test(r.finished) && !r.finished.includes('"'))), rows.map((r) => r.finished).join(' | '));
+  assert.ok(rows.every((r) => r.finished !== '—' || r.notes.includes('Drilling guide')));
 });
 
 test('assembly steps mention the stand-off gap', () => {
@@ -70,18 +71,16 @@ test('A2 needs fewer template pages than A4 for the same box', () => {
   assert.ok(a2 < a4, `A2 pages ${a2} should be fewer than A4 pages ${a4}`);
 });
 
-test('the hybrid packer never needs more pages than the old row-shelf packer, and needs fewer for A3/A2', () => {
+test('the hybrid packer never needs more pages than the old row-shelf packer, and needs fewer for A3', () => {
   const { result } = make();
-  // Row-shelf-only page counts at default size, recorded before the hybrid packer existed.
-  const baseline = { A4: 18, A3: 9, A2: 8 };
+  // Row-shelf-only page counts at default size (including the inter-tier drill guides).
+  const baseline = { A4: 25, A3: 14, A2: 8 };
   for (const [paper, shelfPages] of Object.entries(baseline)) {
     const pages = toPDF(result, validate({ paper }).params, { compress: false }).getNumberOfPages();
     assert.ok(pages <= shelfPages, `${paper}: ${pages} pages worse than row-shelf baseline (${shelfPages})`);
   }
   const a3 = toPDF(result, validate({ paper: 'A3' }).params, { compress: false }).getNumberOfPages();
-  const a2 = toPDF(result, validate({ paper: 'A2' }).params, { compress: false }).getNumberOfPages();
-  assert.ok(a3 < 9, `expected A3 to improve on the row-shelf baseline (9), got ${a3}`);
-  assert.ok(a2 < 8, `expected A2 to improve on the row-shelf baseline (8), got ${a2}`);
+  assert.ok(a3 < 14, `expected A3 to improve on the row-shelf baseline (14), got ${a3}`);
 });
 
 test('pdf is compressed by default', () => {

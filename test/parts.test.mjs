@@ -5,6 +5,8 @@ import { buildBox } from '../src/parts.js';
 import { validate } from '../src/params.js';
 import { MASTER } from '../src/master-data.js';
 import { hausdorff, toPaths, inter, offset, areaOf } from '../src/geom.js';
+import { labelLines } from '../src/labels.js';
+import { cutList } from '../src/cutlist.js';
 
 const sections = JSON.parse(fs.readFileSync(new URL('../reference/fusion-sections.json', import.meta.url)));
 const refLoop = (ref) => {
@@ -53,7 +55,9 @@ test('design size: part lengths along width', () => {
 });
 
 function overlaps(parts) {
-  const solid = parts.filter((p) => p.loops.length);
+  // kind:'plan' parts are printable drilling-guide diagrams, not real 3D geometry — they
+  // reuse the board's own x-range/coordinates on purpose and are never physically present.
+  const solid = parts.filter((p) => p.loops.length && p.kind !== 'plan');
   const hits = [];
   for (let i = 0; i < solid.length; i++) for (let j = i + 1; j < solid.length; j++) {
     const a = solid[i], b = solid[j];
@@ -116,4 +120,45 @@ test('normal thick timber does not produce slivers or split warnings', () => {
   }
   const { warnings } = buildBox(validate({ H: 150, D: 375 }).params);
   assert.ok(!warnings.some((w) => /splits/.test(w)), warnings.join('\n'));
+});
+
+test('design size: inter-tier drill guides exist for all 4 boards, 4 holes each, no warnings', () => {
+  const { parts, warnings } = design();
+  const ids = ['bottom.topDrill', 'middle.floorDrill', 'middle.topDrill', 'top.floorDrill'];
+  for (const id of ids) {
+    const p = parts.find((q) => q.id === id);
+    assert.ok(p, `${id} missing`);
+    assert.equal(p.kind, 'plan');
+    assert.equal(p.holes.length, 4, id);
+    assert.equal(p.loops.length, 1, id);
+    for (const h of p.holes) assert.equal(h.d, 20, id);
+  }
+  assert.ok(!warnings.some((w) => /drill/i.test(w)), warnings.join('\n'));
+});
+
+test('inter-tier drill guide holes stay within the board at every fit-tested size', () => {
+  for (const [H, D] of [[180, 225], [450, 560], [300, 600], [450, 250]]) {
+    for (const t of [{ carcass: 4 }, { carcass: 12 }]) {
+      const { parts } = buildBox(validate({ H, D, ...t }).params);
+      for (const id of ['bottom.topDrill', 'middle.floorDrill', 'middle.topDrill', 'top.floorDrill']) {
+        const p = parts.find((q) => q.id === id);
+        assert.ok(p, `${id} missing at H${H} D${D} carcass${t.carcass}`);
+        const [loop] = p.loops;
+        const zs = loop.map((pt) => pt[1]);
+        const xs2 = loop.map((pt) => pt[0]);
+        for (const h of p.holes) {
+          assert.ok(h.z >= Math.min(...xs2) - 1e-6 && h.z <= Math.max(...xs2) + 1e-6, `${id} hole x out of board at H${H} D${D}`);
+          assert.ok(h.y >= Math.min(...zs) - 1e-6 && h.y <= Math.max(...zs) + 1e-6, `${id} hole z out of board at H${H} D${D}`);
+        }
+      }
+    }
+  }
+});
+
+test('drill guide labels and cut list rows say not to cut it from timber', () => {
+  const { parts } = design();
+  const p = parts.find((q) => q.id === 'bottom.topDrill');
+  assert.match(labelLines(p).join(' '), /do not cut/i);
+  const row = cutList(parts).find((r) => r.id === 'bottom.topDrill');
+  assert.match(row.notes, /drilling guide/i);
 });

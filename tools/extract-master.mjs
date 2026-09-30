@@ -47,6 +47,16 @@ const out = {
     { z: r3(-48.07 + zShift), y: 142.84, d: 20 },
     { z: r3(111 + zShift), y: 25, d: 20 },
   ],
+  // Dowels pinning one tier's board to the next across the 10 mm inter-tier gap, measured
+  // the same way from "Bottom:1+Dowels:1" (y≈95, the bottom/middle seam) and
+  // "Middle:1+Dowels(1):1" (y≈195, the middle/top seam). x is the board's own width axis
+  // (not scaled by depth/height — scaled proportionally to the board's own length instead,
+  // in parts.js), symmetric about the board centre; xDesign/halfLenDesign gives that ratio
+  // (halfLenDesign = design carcass length / 2 = (300 − 2×6) / 2 = 144).
+  interTierSeams: [
+    { y: 95, xDesign: 104, halfLenDesign: 144, zs: [r3(58.54 + zShift), r3(-71.44 + zShift)], d: 20 },
+    { y: 195, xDesign: 109, halfLenDesign: 144, zs: [r3(99.28 + zShift), r3(-14.58 + zShift)], d: 20 },
+  ],
 };
 
 fs.writeFileSync(new URL('../src/master-data.js', import.meta.url),
