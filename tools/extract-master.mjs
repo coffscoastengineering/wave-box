@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import { simplify, signedArea, bboxOf } from '../src/geom.js';
 
 const sections = JSON.parse(fs.readFileSync(new URL('../reference/fusion-sections.json', import.meta.url)));
-const master = JSON.parse(fs.readFileSync(new URL('../reference/fusion-master.json', import.meta.url)));
 
 const find = (path) => {
   const s = sections.find((p) => p.path === path);
@@ -12,9 +11,6 @@ const find = (path) => {
 };
 const walnutRaw = find('Sides:1+Side 1:1');
 const zShift = -bboxOf([walnutRaw]).z0;
-// Sketch1 model space -> part space offsets, measured from walnut bbox vs sketch frame (±187.5, ±149.9).
-const sketchDz = bboxOf([walnutRaw]).z0 + 187.5;
-const sketchDy = 149.9;
 
 const r3 = (v) => Math.round(v * 1000) / 1000;
 const norm = (pts) => {
@@ -34,17 +30,22 @@ const out = {
     top: { env: env('Top:1+Body:1+Component41:1'), y0: 200, y1: 299.8,
       wallTop: r3(bboxOf([find('Top:1+Body:1+Component37:1')]).y1) },
   },
+  // Measured directly from the real dowel bodies in the "Box Revision" Fusion document
+  // (2026-09-30), which models all 5 side-fixing dowels as actual 3D bodies spanning the
+  // stand-off gap — supersedes the 3-circle sketch in fusion-master.json and this file's
+  // earlier 2 computed middle-tier positions. Fusion coordinates (x=width, y=height,
+  // z=depth before zShift) read via MCP from "Side:1+Dowels (2):2", bodies at x≈-156 (the
+  // stand-off gap, not the carcass end or the walnut body itself): (-114,25), (73.87,
+  // 142.84), (160,265), (-48.07,142.84), (111,25); z here = raw z + zShift. All 5 clear the
+  // 5 mm edge-margin warning by 13.8–23.4 mm at design size. (The separate "Dowels" bodies
+  // under Middle/Bottom, at x≈±94–114 inside the drawer footprint, are unrelated drawer
+  // joinery, not side-fixing dowels — not used here.)
   dowels: [
-    ...master.circles.map((c) => ({ z: r3(c.c[0] + sketchDz + zShift), y: r3(c.c[1] + sketchDy), d: c.d })),
-    // Middle tier has no dowel in the original Fusion sketch — owner asked for the same
-    // 2-dowel fixing pattern as the bottom tier instead of glued spacer blocks (a single
-    // dowel lets the side pivot around it while clamping, before the glue sets). Positions
-    // found by scanning the middle tier's solid overlap of the walnut and carcass-end
-    // profiles for the widest-clearance symmetric pair — both sit >12 mm clear of every
-    // edge at design size (the built-in warning still fires if a user's size shrinks that
-    // margin below 5 mm, same as the other three dowels).
-    { z: 102, y: 130, d: 20 },
-    { z: 122, y: 130, d: 20 },
+    { z: r3(-114 + zShift), y: 25, d: 20 },
+    { z: r3(73.87 + zShift), y: 142.84, d: 20 },
+    { z: r3(160 + zShift), y: 265, d: 20 },
+    { z: r3(-48.07 + zShift), y: 142.84, d: 20 },
+    { z: r3(111 + zShift), y: 25, d: 20 },
   ],
 };
 
