@@ -51,7 +51,7 @@ test('design size: part lengths along width', () => {
   assert.equal(byId['bottom.drawerSide'].qty, 2);
   assert.equal(byId['sides.walnut'].qty, 2);
   assert.equal(byId['dowel'].length, 26);
-  assert.equal(byId['dowel'].qty, 5);
+  assert.equal(byId['dowel'].qty, 10);
 });
 
 function overlaps(parts) {
@@ -161,4 +161,18 @@ test('drill guide labels and cut list rows say not to cut it from timber', () =>
   assert.match(labelLines(p).join(' '), /do not cut/i);
   const row = cutList(parts).find((r) => r.id === 'bottom.topDrill');
   assert.match(row.notes, /drilling guide/i);
+});
+
+test('dowel hardware counts: 10 side dowels (5 positions x 2 sides) + 8 inter-tier (4 per seam x 2 seams) = 18', () => {
+  const { parts } = design();
+  const side = parts.find((p) => p.id === 'dowel');
+  assert.equal(side.qty, 10, 'side dowel hardware qty');
+  const inter = parts.find((p) => p.id === 'interTierDowel');
+  assert.ok(inter, 'interTierDowel hardware part missing');
+  assert.equal(inter.kind, 'dowel');
+  assert.equal(inter.qty, 8, 'inter-tier dowel hardware qty');
+  assert.equal(inter.thickness, 20);
+  const rows = cutList(parts);
+  const totalDowels = rows.filter((r) => r.id === 'dowel' || r.id === 'interTierDowel').reduce((n, r) => n + r.qty, 0);
+  assert.equal(totalDowels, 18);
 });

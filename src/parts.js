@@ -220,8 +220,16 @@ export function buildBox(params) {
     }
   }
   parts.push({
+    // Each of the 5 positions gets its own dowel on both the left and right side pieces.
     id: 'dowel', name: `Dowel Ø${DOWEL_D}`, tier: 'sides', timber: 'dowel', kind: 'dowel', thickness: DOWEL_D,
-    x: [W / 2 - tc, W / 2 + gap + tw], qty: dowels.length, length: tw + gap + tc, loops: [], holes: [], bevels: [], grain: 'x', ref: null,
+    x: [W / 2 - tc, W / 2 + gap + tw], qty: dowels.length * 2, length: tw + gap + tc, loops: [], holes: [], bevels: [], grain: 'x', ref: null,
+  });
+
+  const seamDowelCount = bottomMiddleSeam.zs.length * 2 + middleTopSeam.zs.length * 2;
+  parts.push({
+    id: 'interTierDowel', name: `Dowel Ø${DOWEL_D} (inter-tier)`, tier: 'bottom', timber: 'dowel', kind: 'dowel', thickness: DOWEL_D,
+    x: [-tc, tc], qty: seamDowelCount, length: tc * 2 + (MASTER.tiers.middle.y0 - MASTER.tiers.bottom.y1) * sy,
+    loops: [], holes: [], bevels: [], grain: 'y', ref: null,
   });
 
   const all = bboxOf(parts.flatMap((p) => p.loops));

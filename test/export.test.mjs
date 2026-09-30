@@ -16,7 +16,7 @@ test('byTimber groups drawable timber and cut-list dowels', () => {
   assert.equal(g.walnut.length, 1);
   assert.ok(g.carcass.length > 0);
   assert.ok(g.drawer.length > 0);
-  assert.equal(g.dowel.length, 1);
+  assert.equal(g.dowel.length, 2);
 });
 
 test('SVG export contains millimetre sheet size, cut paths, holes and labels', () => {

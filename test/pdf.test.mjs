@@ -15,7 +15,7 @@ test('cut list has a row for every part with its quantity', () => {
   const rows = cutList(result.parts);
   assert.deepEqual(rows.map((r) => r.id).sort(), result.parts.map((p) => p.id).sort());
   assert.equal(rows.find((r) => r.id === 'sides.walnut').qty, 2);
-  assert.equal(rows.find((r) => r.id === 'dowel').qty, 5);
+  assert.equal(rows.find((r) => r.id === 'dowel').qty, 10);
 });
 
 test('curved parts get a block size with allowance', () => {
