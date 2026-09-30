@@ -1,16 +1,23 @@
 {
   "name": "fusion",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Offline Claude Box template generator with PDF, SVG and DXF exports.",
+  "main": "dist/claude-box-generator.html",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",
-    "build": "node tools/build.mjs"
+    "build": "node tools/build.mjs",
+    "serve": "node tools/serve.mjs"
   },
-  "keywords": [],
+  "keywords": [
+    "woodworking",
+    "templates",
+    "svg",
+    "dxf",
+    "pdf"
+  ],
   "author": "",
   "license": "ISC",
   "type": "module",

@@ -1,9 +1,12 @@
 import { validate, DEFAULTS, LIMITS } from '../params.js';
 import { buildBox } from '../parts.js';
 import { toPDF } from '../export-pdf.js';
+import { toSVG } from '../export-svg.js';
+import { toDXF } from '../export-dxf.js';
 import { cutList } from '../cutlist.js';
 import { fmt, TIMBER_NAME } from '../labels.js';
 import { bboxOf } from '../geom.js';
+import { MATERIAL_PRESETS, pairedDimension, safetyStatus } from '../presets.js';
 import { TIERS, groupedPartOptions, selectParts } from './view-model.js';
 
 const FIELDS = Object.keys(LIMITS);
@@ -11,9 +14,12 @@ const $ = (id) => document.getElementById(id);
 const form = $('form');
 let current = null;
 let viewKey = '';
+let activePreset = 'standard';
 
 function fillForm(values) {
   for (const k of FIELDS) form.elements[k].value = values[k];
+  form.elements.paper.value = values.paper ?? 'A4';
+  syncPresetButtons();
 }
 
 function readForm() {
@@ -126,6 +132,23 @@ function renderCutList(result) {
   }));
 }
 
+function syncPresetButtons() {
+  const values = Object.fromEntries(['walnut', 'carcass', 'drawer'].map((k) => [k, Number(form.elements[k].value)]));
+  activePreset = Object.entries(MATERIAL_PRESETS).find(([, p]) => (
+    p.walnut === values.walnut && p.carcass === values.carcass && p.drawer === values.drawer
+  ))?.[0] ?? '';
+  document.querySelectorAll('[data-preset]').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.preset === activePreset));
+  });
+}
+
+function renderSafety(warnings) {
+  const s = safetyStatus(warnings);
+  const el = $('safety');
+  el.dataset.state = s.state;
+  el.textContent = s.label;
+}
+
 function update() {
   const { params, errors } = validate(readForm());
   let bad = false;
@@ -136,13 +159,14 @@ function update() {
     $(`${k}-err`).textContent = msg;
     if (msg) bad = true;
   }
-  $('pdf').disabled = bad;
+  for (const id of ['pdf', 'svg', 'dxf']) $(id).disabled = bad;
   if (bad) return;
 
   const result = buildBox(params);
   current = { params, result };
   const o = result.overall;
   $('overall').textContent = `${fmt(o.H)} × ${fmt(o.D)} × ${fmt(o.W)}`;
+  renderSafety(result.warnings);
   refreshView();
   renderCutList(result);
   const w = $('warnings');
@@ -163,17 +187,70 @@ function update() {
 let timer;
 const schedule = () => { clearTimeout(timer); timer = setTimeout(update, 150); };
 
-form.addEventListener('input', schedule);
+form.addEventListener('input', (e) => {
+  const name = e.target?.name;
+  if ($('lock-proportions').checked && (name === 'H' || name === 'D')) {
+    const value = Number(e.target.value);
+    if (Number.isFinite(value)) {
+      for (const [k, v] of Object.entries(pairedDimension(name, value))) form.elements[k].value = v;
+    }
+  }
+  if (['walnut', 'carcass', 'drawer'].includes(name)) syncPresetButtons();
+  schedule();
+});
 window.addEventListener('resize', () => { if (current) refreshView(); });
 
-$('reset').addEventListener('click', () => { fillForm(DEFAULTS); viewKey = ''; update(); });
+$('reset').addEventListener('click', () => {
+  $('lock-proportions').checked = true;
+  fillForm(DEFAULTS);
+  viewKey = '';
+  update();
+});
+
+document.querySelectorAll('[data-preset]').forEach((button) => {
+  button.addEventListener('click', () => {
+    form.elements.walnut.value = MATERIAL_PRESETS[button.dataset.preset].walnut;
+    form.elements.carcass.value = MATERIAL_PRESETS[button.dataset.preset].carcass;
+    form.elements.drawer.value = MATERIAL_PRESETS[button.dataset.preset].drawer;
+    syncPresetButtons();
+    update();
+  });
+});
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
 
 $('pdf').addEventListener('click', () => {
   update();
+  const tab = window.open('', '_blank');
   const doc = toPDF(current.result, current.params);
   const url = URL.createObjectURL(doc.output('blob'));
-  window.open(url, '_blank');
+  if (tab) {
+    tab.location.href = url;
+  } else {
+    downloadBlob(doc.output('blob'), 'claude-box-templates.pdf');
+  }
   setTimeout(() => URL.revokeObjectURL(url), 60000);
+});
+
+$('svg').addEventListener('click', () => {
+  update();
+  const svg = toSVG(current.result.parts);
+  downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), 'claude-box-templates.svg');
+});
+
+$('dxf').addEventListener('click', () => {
+  update();
+  const dxf = toDXF(current.result.parts);
+  downloadBlob(new Blob([dxf], { type: 'application/dxf' }), 'claude-box-templates.dxf');
 });
 
 fillForm(DEFAULTS);
