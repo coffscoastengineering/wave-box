@@ -2,7 +2,6 @@
   "name": "fusion",
   "version": "1.0.0",
   "description": "Offline Claude Box template generator with PDF, SVG and DXF exports.",
-  "main": "dist/claude-box-generator.html",
   "directories": {
     "doc": "docs"
   },

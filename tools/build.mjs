@@ -16,4 +16,5 @@ const html = fs.readFileSync(r('src/ui/index.html'), 'utf8')
   .replace('/*JS*/', () => code);
 fs.mkdirSync(r('dist'), { recursive: true });
 fs.writeFileSync(r('dist/claude-box-generator.html'), html);
+fs.writeFileSync(r('docs/index.html'), html);
 console.log(`dist/claude-box-generator.html ${(html.length / 1024).toFixed(0)} KB`);
