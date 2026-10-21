@@ -111,17 +111,33 @@ function planInternalLabel(it, tx, ty, pw, ph) {
   const longest = Math.max(...text.map((line) => line.length));
   const font = Math.min(7.5, h / (text.length * 1.35), w / (longest * 0.52));
   if (font < 3.8) return null;
-  return { text, font, pick, color: tagColor(it.part) };
+  return { text, font, at: placePoint([pick.z, pick.y], it), color: tagColor(it.part) };
 }
 
-function drawInternalLabel(doc, label, toPage) {
-  const { text, font, pick, color } = label;
+// Thin boards have no room inside their outline: put a one-line code just outside it,
+// above if that is on the page, otherwise below.
+function planExternalLabel(it, tx, ty, pw, ph) {
+  const top = it.dy + it.labelH, bottom = top + (it.b.y1 - it.b.y0);
+  const x0 = Math.max(it.dz, tx) + 1, x1 = Math.min(it.dz + (it.b.z1 - it.b.z0), tx + pw) - 1;
+  if (x1 - x0 < 12) return null;
+  const qty = it.part.templateQty ?? it.part.qty;
+  const text = [qty > 1 ? `${partCode(it.part)} x${qty}` : partCode(it.part)];
+  const font = Math.min(5, (x1 - x0) / (text[0].length * 0.52));
+  if (font < 3) return null;
+  let y = top - 1.6;
+  if (y < ty + 1.5) y = bottom + 2.4;
+  if (y > ty + ph - 1.5) return null;
+  return { text, font, at: [(x0 + x1) / 2, y], color: tagColor(it.part) };
+}
+
+function drawLabel(doc, label, toPage) {
+  const { text, font, at, color } = label;
   const lineH = font * 1.22;
   doc.setTextColor(...color);
   text.forEach((line, i) => {
     doc.setFont('helvetica', i ? 'normal' : 'bold');
     doc.setFontSize(i ? font * 0.9 : font);
-    const [px, py] = toPage([pick.z, pick.y]);
+    const [px, py] = toPage(at);
     doc.text(line, px, py + (i - (text.length - 1) / 2) * lineH, { align: 'center', baseline: 'middle' });
   });
 }
@@ -335,11 +351,13 @@ function templatePages(doc, layoutScore, pageW, pageH) {
       return { key: `${rect.r}:${rect.c}`, rect, visible: rectIntersectionArea(item, tile) };
     }).filter((v) => v.visible > 0).sort((a, b) => b.visible - a.visible);
     // Prefer the page showing most of the part; if no label fits there, try the others.
-    for (const minArea of [TEMPLATE_MIN_FRAGMENT_AREA, 0]) {
-      for (const v of tiles) {
-        if (v.visible < minArea) continue;
-        const label = planInternalLabel(it, v.rect.tx, v.rect.ty, pw, ph);
-        if (label) { bestLabelPage.set(it.templateIndex, { key: v.key, label }); return; }
+    for (const plan of [planInternalLabel, planExternalLabel]) {
+      for (const minArea of [TEMPLATE_MIN_FRAGMENT_AREA, 0]) {
+        for (const v of tiles) {
+          if (v.visible < minArea) continue;
+          const label = plan(it, v.rect.tx, v.rect.ty, pw, ph);
+          if (label) { bestLabelPage.set(it.templateIndex, { key: v.key, label }); return; }
+        }
       }
     }
   });
@@ -405,7 +423,7 @@ function templatePages(doc, layoutScore, pageW, pageH) {
         }
       }
       const planned = bestLabelPage.get(it.templateIndex);
-      if (planned?.key === `${r}:${c}`) drawInternalLabel(doc, planned.label, toPage);
+      if (planned?.key === `${r}:${c}`) drawLabel(doc, planned.label, toPage);
     }
     doc.restoreGraphicsState();
   }

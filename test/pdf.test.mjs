@@ -4,7 +4,7 @@ import { buildBox } from '../src/parts.js';
 import { validate } from '../src/params.js';
 import { cutList, assemblySteps } from '../src/cutlist.js';
 import { instructionsPDF, printableTemplateParts, templatePageCount, toPDF } from '../src/export-pdf.js';
-import { templateLabelLines } from '../src/labels.js';
+import { templateLabelLines, partCode as partCodeOf } from '../src/labels.js';
 
 const make = (raw = {}) => {
   const { params } = validate(raw);
@@ -174,4 +174,13 @@ test("instructions pdf lists generator warnings; clean boxes have none", () => {
   assert.ok(instructionsPDF(risky.result, risky.params, { compress: false }).output().includes("Check before cutting"));
   const clean = make();
   assert.ok(!instructionsPDF(clean.result, clean.params, { compress: false }).output().includes("Check before cutting"));
+});
+
+test("every printable template carries a part code somewhere in the pdf", () => {
+  for (const raw of [{}, { H: 200, D: 250, W: 150 }]) {
+    const { params, result } = make(raw);
+    const text = toPDF(result, params, { compress: false }).output();
+    const missing = printableTemplateParts(result.parts).map(partCodeOf).filter((code) => !text.includes("(" + code));
+    assert.deepEqual(missing, [], JSON.stringify(raw));
+  }
 });

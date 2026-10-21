@@ -54,7 +54,9 @@ export function templateLabelLines(part) {
   const qty = part.templateQty ?? part.qty;
   const name = part.templateName ?? part.name;
   const qtyText = qty > 1 ? ` - qty ${qty}` : '';
-  return [partCode(part), name, `${TIMBER_NAME[part.timber]} ${fmt(part.thickness)}${qtyText}`];
+  // Profile templates show grain left-right; curved/board templates are end-on to a length-wise grain.
+  const grain = part.grain === 'z' ? 'Grain left-right' : 'Grain along length';
+  return [partCode(part), name, `${TIMBER_NAME[part.timber]} ${fmt(part.thickness)}${qtyText}`, grain];
 }
 
 // Rough label width for exporters without text metrics.
