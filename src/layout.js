@@ -97,3 +97,10 @@ export function layout(parts, { gap = 15, maxWidth = 600, labelH = 0, labelW = (
 }
 
 export const placePoint = ([z, y], it) => [it.dz + (z - it.b.z0), it.dy + it.labelH + (it.b.y1 - y)];
+
+// Drill-guide ("plan") holes use (length, depth) coords, so depth runs top-down from b.y1.
+export const holePoint = (hole, it) => (
+  hole.face === 'plan'
+    ? [it.dz + hole.z, it.dy + it.labelH + (it.b.y1 - hole.y)]
+    : placePoint([hole.z, hole.y], it)
+);

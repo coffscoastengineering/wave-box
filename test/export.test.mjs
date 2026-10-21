@@ -9,7 +9,9 @@ const { params } = validate({});
 const { parts } = buildBox(params);
 const drawable = parts.filter((p) => p.loops.length);
 const loopCount = drawable.reduce((n, p) => n + p.loops.length, 0);
-const holeCount = drawable.reduce((n, p) => n + p.holes.length, 0);
+// Plan-face drill marks use (length, depth) coords and belong to the PDF templates only.
+const planHoles = drawable.reduce((n, p) => n + p.holes.filter((h) => h.face === 'plan').length, 0);
+const holeCount = drawable.reduce((n, p) => n + p.holes.length, 0) - planHoles;
 
 test('byTimber groups drawable timber and cut-list dowels', () => {
   const g = byTimber(parts);
@@ -40,4 +42,8 @@ test('DXF export is R12, millimetre units, closed polylines with circles and lab
   for (const block of dxf.split('0\nPOLYLINE\n').slice(1)) {
     assert.match(block.slice(0, 60), /70\n1/);
   }
+});
+
+test('SVG and DXF omit plan-face drill marks', () => {
+  assert.ok(planHoles > 0);
 });

@@ -9,7 +9,8 @@ const extra = process.argv[3];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.pdf': 'application/pdf', '.svg': 'image/svg+xml', '.json': 'application/json' };
 
 http.createServer((req, res) => {
-  const url = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let url;
+  try { url = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { res.writeHead(400).end(); return; }
   const base = extra && url.startsWith('/scratch/') ? path.resolve(extra) : root;
   const file = path.resolve(base, '.' + (extra && url.startsWith('/scratch/') ? url.slice(8) : url));
   const rel = path.relative(base, file);

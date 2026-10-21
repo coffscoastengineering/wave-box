@@ -1,6 +1,8 @@
 export const DEFAULTS = Object.freeze({
-  H: 300, D: 375, W: 300, walnut: 10, carcass: 6, drawer: 5, gap: 10, paper: 'A4',
+  H: 300, D: 375, W: 300, walnut: 10, carcass: 6, drawer: 5, gap: 10, paper: 'A4', orientation: 'auto',
 });
+
+export const PAPERS = Object.freeze(['A4', 'A3', 'A2']);
 
 export const LIMITS = Object.freeze({
   H: [150, 600], D: [190, 750], W: [120, 600],
@@ -31,6 +33,7 @@ export function validate(raw = {}) {
       params[key] = v;
     }
   }
-  params.paper = ['A4', 'A3', 'A2'].includes(raw.paper) ? raw.paper : 'A4';
+  params.paper = PAPERS.includes(raw.paper) ? raw.paper : 'A4';
+  params.orientation = ['auto', 'portrait', 'landscape'].includes(raw.orientation) ? raw.orientation : 'auto';
   return { params, errors };
 }

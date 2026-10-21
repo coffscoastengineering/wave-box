@@ -36,8 +36,16 @@ test('numeric strings parse', () => {
 
 test('known paper sizes pass through, unknown falls back to A4', () => {
   for (const p of ['A4', 'A3', 'A2']) assert.equal(validate({ paper: p }).params.paper, p);
+  assert.equal(validate({ paper: 'auto' }).params.paper, 'A4');
   assert.equal(validate({ paper: 'Letter' }).params.paper, 'A4');
   assert.equal(validate({ paper: 'Tabloid' }).params.paper, 'A4');
+});
+
+test('known orientations pass through, unknown falls back to auto', () => {
+  for (const orientation of ['auto', 'portrait', 'landscape']) {
+    assert.equal(validate({ orientation }).params.orientation, orientation);
+  }
+  assert.equal(validate({ orientation: 'sideways' }).params.orientation, 'auto');
 });
 
 test('metric only: no units setting exists', () => {

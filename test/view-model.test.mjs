@@ -41,9 +41,9 @@ test('groupedPartOptions options match partOptions labels for that part', () => 
   for (const g of groupedPartOptions(parts)) for (const o of g.options) assert.equal(o.label, flat[o.id]);
 });
 
-test('selectParts with empty id returns every drawable part except drilling guides', () => {
+test('selectParts with empty id returns every drawable part', () => {
   const sel = selectParts(parts, '');
-  assert.equal(sel.length, parts.filter((p) => p.loops.length && p.kind !== 'plan').length);
+  assert.equal(sel.length, parts.filter((p) => p.loops.length).length);
 });
 
 test('selectParts with an id returns only that part', () => {
@@ -52,7 +52,7 @@ test('selectParts with an id returns only that part', () => {
   assert.equal(sel[0].id, 'bottom.wall');
 });
 
-const assemblyCount = parts.filter((p) => p.loops.length && p.kind !== 'plan').length;
+const assemblyCount = parts.filter((p) => p.loops.length).length;
 
 test('selectParts with an id no longer present falls back to the full assembly', () => {
   const sel = selectParts(parts, 'not.a.real.part');
@@ -70,14 +70,6 @@ test('selectParts with an unknown tier: key falls back to the full assembly', ()
   assert.equal(sel.length, assemblyCount);
 });
 
-test('drilling-guide (plan) parts are excluded from the full assembly and whole-tier views, but selectable by their own id', () => {
-  assert.ok(parts.some((p) => p.kind === 'plan'), 'fixture should include a plan part');
-  const full = selectParts(parts, '');
-  assert.ok(full.every((p) => p.kind !== 'plan'), 'plan part leaked into full assembly');
-  const bottomTier = selectParts(parts, 'tier:bottom');
-  assert.ok(bottomTier.every((p) => p.kind !== 'plan'), 'plan part leaked into tier view');
-  const planId = parts.find((p) => p.kind === 'plan').id;
-  const byId = selectParts(parts, planId);
-  assert.equal(byId.length, 1);
-  assert.equal(byId[0].kind, 'plan');
+test('no separate drilling-guide plan parts are exposed in the preview selector', () => {
+  assert.ok(!parts.some((p) => p.kind === 'plan'));
 });

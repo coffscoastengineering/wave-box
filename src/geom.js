@@ -54,7 +54,6 @@ export function rect(z0, y0, z1, y1) {
 }
 
 export const scaleLoop = (loop, sz, sy) => loop.map(([z, y]) => [z * sz, y * sy]);
-export const translateLoop = (loop, dz, dy) => loop.map(([z, y]) => [z + dz, y + dy]);
 
 export const areaOf = (paths) => paths.reduce((a, p) => a + Clipper.Area(p), 0) / S / S;
 
@@ -65,8 +64,6 @@ export function bboxOf(loops) {
   }
   return { z0, z1, y0, y1 };
 }
-
-export const pathsBBox = (paths) => bboxOf(fromPaths(paths));
 
 function densify(loop, step) {
   const out = [];

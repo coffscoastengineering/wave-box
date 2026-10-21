@@ -1,4 +1,4 @@
-import { layout, placePoint } from './layout.js';
+import { layout, placePoint, holePoint } from './layout.js';
 import { estimateLabelWidth, labelLines } from './labels.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({
@@ -41,8 +41,8 @@ export function toSVG(parts, { title = 'Claude Box templates', maxWidth = 600 } 
   }
   out.push('</g>', '<g id="holes">');
   for (const it of L.items) {
-    for (const h of it.part.holes) {
-      const [cx, cy] = placePoint([h.z, h.y], it);
+    for (const h of it.part.holes.filter((hole) => hole.face !== 'plan')) {
+      const [cx, cy] = holePoint(h, it);
       out.push(`<circle class="hole" data-part="${esc(it.part.id)}" cx="${cx.toFixed(3)}" cy="${cy.toFixed(3)}" r="${(h.d / 2).toFixed(3)}"/>`);
     }
   }

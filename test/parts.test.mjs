@@ -5,7 +5,6 @@ import { buildBox } from '../src/parts.js';
 import { validate } from '../src/params.js';
 import { MASTER } from '../src/master-data.js';
 import { hausdorff, toPaths, inter, offset, areaOf } from '../src/geom.js';
-import { labelLines } from '../src/labels.js';
 import { cutList } from '../src/cutlist.js';
 
 const sections = JSON.parse(fs.readFileSync(new URL('../reference/fusion-sections.json', import.meta.url)));
@@ -131,45 +130,44 @@ test('normal thick timber does not produce slivers or split warnings', () => {
   assert.ok(!warnings.some((w) => /splits/.test(w)), warnings.join('\n'));
 });
 
-test('design size: inter-tier drill guides exist for all 4 boards, 4 holes each, no warnings', () => {
+test('design size: inter-tier drill marks are on the 4 receiving boards, no separate guides', () => {
   const { parts, warnings } = design();
-  const ids = ['bottom.topDrill', 'middle.floorDrill', 'middle.topDrill', 'top.floorDrill'];
+  assert.ok(!parts.some((p) => p.kind === 'plan'), 'separate drill-guide template should not be emitted');
+  const ids = ['bottom.top', 'middle.floor', 'middle.top', 'top.floor'];
   for (const id of ids) {
     const p = parts.find((q) => q.id === id);
     assert.ok(p, `${id} missing`);
-    assert.equal(p.kind, 'plan');
-    assert.equal(p.holes.length, 4, id);
-    assert.equal(p.loops.length, 1, id);
-    for (const h of p.holes) assert.equal(h.d, 20, id);
+    const holes = p.holes.filter((h) => h.face === 'plan');
+    assert.equal(holes.length, 4, id);
+    for (const h of holes) {
+      assert.equal(h.d, 20, id);
+      assert.equal(h.label, 'Inter-tier dowel');
+    }
   }
   assert.ok(!warnings.some((w) => /drill/i.test(w)), warnings.join('\n'));
 });
 
-test('inter-tier drill guide holes stay within the board at every fit-tested size', () => {
+test('inter-tier drill marks stay within the board at every fit-tested size', () => {
   for (const [H, D] of [[180, 225], [450, 560], [300, 600], [450, 250]]) {
     for (const t of [{ carcass: 4 }, { carcass: 12 }]) {
       const { parts } = buildBox(validate({ H, D, ...t }).params);
-      for (const id of ['bottom.topDrill', 'middle.floorDrill', 'middle.topDrill', 'top.floorDrill']) {
+      for (const id of ['bottom.top', 'middle.floor', 'middle.top', 'top.floor']) {
         const p = parts.find((q) => q.id === id);
         assert.ok(p, `${id} missing at H${H} D${D} carcass${t.carcass}`);
-        const [loop] = p.loops;
-        const zs = loop.map((pt) => pt[1]);
-        const xs2 = loop.map((pt) => pt[0]);
-        for (const h of p.holes) {
-          assert.ok(h.z >= Math.min(...xs2) - 1e-6 && h.z <= Math.max(...xs2) + 1e-6, `${id} hole x out of board at H${H} D${D}`);
-          assert.ok(h.y >= Math.min(...zs) - 1e-6 && h.y <= Math.max(...zs) + 1e-6, `${id} hole z out of board at H${H} D${D}`);
+        const holes = p.holes.filter((h) => h.face === 'plan');
+        for (const h of holes) {
+          assert.ok(h.z >= -1e-6 && h.z <= p.length + 1e-6, `${id} hole x out of board at H${H} D${D}`);
+          assert.ok(h.y >= -1e-6 && h.y <= D + 1e-6, `${id} hole depth out of board at H${H} D${D}`);
         }
       }
     }
   }
 });
 
-test('drill guide labels and cut list rows say not to cut it from timber', () => {
+test('cut list no longer includes separate drill-guide rows', () => {
   const { parts } = design();
-  const p = parts.find((q) => q.id === 'bottom.topDrill');
-  assert.match(labelLines(p).join(' '), /do not cut/i);
-  const row = cutList(parts).find((r) => r.id === 'bottom.topDrill');
-  assert.match(row.notes, /drilling guide/i);
+  const rows = cutList(parts);
+  assert.ok(!rows.some((r) => /drill guide/i.test(r.name) || /drilling guide/i.test(r.notes)));
 });
 
 test('dowel hardware counts: 10 side dowels (5 positions x 2 sides) + 8 inter-tier (4 per seam x 2 seams) = 18', () => {

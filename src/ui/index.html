@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>Claude Box — Template Generator</title>
 <style>/*CSS*/</style>
 </head>
@@ -42,6 +43,11 @@
         <label><input type="radio" name="paper" value="A3"><span>A3<small class="page-count" data-paper="A3"></small></span></label>
         <label><input type="radio" name="paper" value="A2"><span>A2<small class="page-count" data-paper="A2"></small></span></label>
       </div>
+      <div class="seg" role="radiogroup" aria-label="Page orientation">
+        <label><input type="radio" name="orientation" value="auto" checked><span>Auto</span></label>
+        <label><input type="radio" name="orientation" value="portrait"><span>Portrait</span></label>
+        <label><input type="radio" name="orientation" value="landscape"><span>Landscape</span></label>
+      </div>
     </fieldset>
 
     <button type="button" id="reset" class="link">Reset to original design</button>
@@ -78,6 +84,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7m0-7L10 14M19 14v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/></svg>
         View printable templates (PDF)
       </button>
+      <button type="button" id="instructions" class="secondary">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Instructions
+      </button>
       <button type="button" id="svg" class="secondary">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
         SVG
@@ -87,11 +97,16 @@
         DXF
       </button>
     </div>
-    <p class="hint">Print at <strong>100 % / “Actual size”</strong> and check the scale square before cutting.</p>
+    <p class="hint">Print at <strong>100 % / “Actual size”</strong> — never “Fit to page”.</p>
 
     <details class="cutlist">
       <summary>Cut list</summary>
       <div class="table-wrap"><table id="cutlist"><thead><tr><th>Part</th><th>Qty</th><th>Timber</th><th>Finished size</th><th>Block / notes</th></tr></thead><tbody></tbody></table></div>
+    </details>
+
+    <details class="instructions-panel" open>
+      <summary>Instructions</summary>
+      <ol id="instructions-list"></ol>
     </details>
   </section>
 </main>

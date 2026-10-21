@@ -1,4 +1,4 @@
-import { layout, placePoint } from './layout.js';
+import { layout, placePoint, holePoint } from './layout.js';
 import { estimateLabelWidth, labelLines } from './labels.js';
 
 const clean = (s) => String(s).replace(/[\r\n]/g, ' ');
@@ -13,7 +13,7 @@ function polyline(out, loop, item) {
 }
 
 function circle(out, hole, item) {
-  const [x, y] = placePoint([hole.z, hole.y], item);
+  const [x, y] = holePoint(hole, item);
   out.push('0', 'CIRCLE', '8', 'HOLES', '10', x.toFixed(3), '20', (-y).toFixed(3), '30', '0', '40', (hole.d / 2).toFixed(3));
 }
 
@@ -42,7 +42,7 @@ export function toDXF(parts, { maxWidth = 600 } = {}) {
 
   for (const it of L.items) {
     for (const loop of it.part.loops) polyline(out, loop, it);
-    for (const h of it.part.holes) circle(out, h, it);
+    for (const h of it.part.holes.filter((hole) => hole.face !== 'plan')) circle(out, h, it);
     labelLines(it.part).forEach((line, i) => text(out, line, it.dz, it.dy + 4 + i * 4));
   }
 

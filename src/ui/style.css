@@ -19,7 +19,7 @@
   --danger-line: #724536;
   --focus: #8fc4ff;
   --radius: 8px;
-  --shadow: 0 24px 70px rgba(0, 0, 0, .28);
+  --shadow: 0 4px 12px rgba(0, 0, 0, .32);
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: dark;
@@ -49,7 +49,8 @@ body {
 .panel,
 .preview-card,
 .warnings,
-.cutlist {
+.cutlist,
+.instructions-panel {
   position: relative;
   background: var(--panel);
   border: 1px solid var(--line);
@@ -97,7 +98,7 @@ body {
   text-transform: uppercase;
 }
 
-.panel-head h1 { margin: 0; font-size: 18px; line-height: 1.2; letter-spacing: 0; }
+.panel-head h1 { margin: 0; font-size: 22px; line-height: 1.2; letter-spacing: 0; }
 
 fieldset {
   border: 0;
@@ -217,6 +218,8 @@ legend {
   border-radius: 7px;
   background: #181d1a;
 }
+
+.seg + .seg { margin-top: 8px; }
 
 .seg label {
   position: relative;
@@ -420,7 +423,7 @@ summary:focus-visible {
   border-radius: 7px;
   background: #202720;
   color: var(--ink-soft);
-  transition: background-color 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
+  transition: transform 150ms ease-out;
 }
 
 .chip:hover { border-color: var(--brass); transform: translateY(-1px); }
@@ -565,7 +568,7 @@ summary:focus-visible {
   bottom: 12px;
   z-index: 8;
   display: grid;
-  grid-template-columns: minmax(230px, 1fr) 112px 112px;
+  grid-template-columns: minmax(230px, 1fr) 132px 112px 112px;
   gap: 10px;
   align-items: stretch;
   margin: -8px;
@@ -591,7 +594,7 @@ summary:focus-visible {
   border: 0;
   background: var(--brass);
   color: var(--brass-ink);
-  box-shadow: 0 12px 28px rgba(201, 146, 60, .22);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
 }
 
 .primary:hover { background: var(--brass-2); }
@@ -618,13 +621,15 @@ summary:focus-visible {
 button:disabled { opacity: .52; cursor: not-allowed; }
 .hint { margin: -4px 0 0; color: var(--ink-soft); font-size: 13px; }
 
-.cutlist {
+.cutlist,
+.instructions-panel {
   overflow: hidden;
   padding: 0;
   box-shadow: none;
 }
 
-.cutlist summary {
+.cutlist summary,
+.instructions-panel summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -635,8 +640,10 @@ button:disabled { opacity: .52; cursor: not-allowed; }
   list-style: none;
 }
 
-.cutlist summary::-webkit-details-marker { display: none; }
-.cutlist summary::after {
+.cutlist summary::-webkit-details-marker,
+.instructions-panel summary::-webkit-details-marker { display: none; }
+.cutlist summary::after,
+.instructions-panel summary::after {
   content: "";
   width: 9px;
   height: 9px;
@@ -647,7 +654,17 @@ button:disabled { opacity: .52; cursor: not-allowed; }
   transition: transform 150ms ease-out;
 }
 
-.cutlist[open] summary::after { transform: rotate(-135deg); }
+.cutlist[open] summary::after,
+.instructions-panel[open] summary::after { transform: rotate(-135deg); }
+.instructions-panel ol {
+  margin: 0;
+  padding: 14px 18px 16px 38px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.instructions-panel li { margin: 0 0 9px; }
+.instructions-panel li:last-child { margin-bottom: 0; }
 .table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td {

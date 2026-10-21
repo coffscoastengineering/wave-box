@@ -1,9 +1,9 @@
-import { validate, DEFAULTS, LIMITS } from '../params.js';
+import { validate, DEFAULTS, LIMITS, PAPERS } from '../params.js';
 import { buildBox } from '../parts.js';
-import { toPDF } from '../export-pdf.js';
+import { instructionsPDF, templatePageCount, toPDF } from '../export-pdf.js';
 import { toSVG } from '../export-svg.js';
 import { toDXF } from '../export-dxf.js';
-import { cutList } from '../cutlist.js';
+import { assemblySteps, cutList } from '../cutlist.js';
 import { fmt, TIMBER_NAME } from '../labels.js';
 import { bboxOf } from '../geom.js';
 import { MATERIAL_PRESETS, pairedDimension, safetyStatus } from '../presets.js';
@@ -18,12 +18,13 @@ let activePreset = 'standard';
 
 function fillForm(values) {
   for (const k of FIELDS) form.elements[k].value = values[k];
-  form.elements.paper.value = values.paper ?? 'A4';
+  form.elements.paper.value = PAPERS.includes(values.paper) ? values.paper : 'A4';
+  form.elements.orientation.value = values.orientation ?? 'auto';
   syncPresetButtons();
 }
 
 function readForm() {
-  const raw = { paper: form.elements.paper.value };
+  const raw = { paper: form.elements.paper.value, orientation: form.elements.orientation.value };
   for (const k of FIELDS) raw[k] = form.elements[k].value;
   return raw;
 }
@@ -48,7 +49,9 @@ function buildPartsSVG(parts, { pad: padOverride } = {}) {
     const d = p.loops.map((l) => `M${l.map(([z, y]) => `${z.toFixed(2)} ${y.toFixed(2)}`).join('L')}Z`).join('');
     const path = svgEl('path', { d, class: `part ${p.timber}`, 'fill-rule': 'evenodd' }, g);
     svgEl('title', {}, path).textContent = `${p.name} — ${TIMBER_NAME[p.timber]} ${fmt(p.thickness)}`;
-    for (const h of p.holes) svgEl('circle', { cx: h.z, cy: h.y, r: h.d / 2, class: 'hole' }, g);
+    for (const h of p.holes.filter((hole) => hole.face !== 'plan')) {
+      svgEl('circle', { cx: h.z, cy: h.y, r: h.d / 2, class: 'hole' }, g);
+    }
   }
   return { svg, bbox: b };
 }
@@ -132,6 +135,14 @@ function renderCutList(result) {
   }));
 }
 
+function renderInstructions(params) {
+  $('instructions-list').replaceChildren(...assemblySteps(params).map((step) => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    return li;
+  }));
+}
+
 function syncPresetButtons() {
   const values = Object.fromEntries(['walnut', 'carcass', 'drawer'].map((k) => [k, Number(form.elements[k].value)]));
   activePreset = Object.entries(MATERIAL_PRESETS).find(([, p]) => (
@@ -145,7 +156,7 @@ function syncPresetButtons() {
 function renderPageCounts(result, params) {
   for (const el of document.querySelectorAll('.page-count')) {
     const paper = el.dataset.paper;
-    const n = toPDF(result, { ...params, paper }).getNumberOfPages();
+    const n = templatePageCount(result, { ...params, paper });
     el.textContent = `${n} page${n === 1 ? '' : 's'}`;
   }
 }
@@ -158,6 +169,7 @@ function renderSafety(warnings) {
 }
 
 function update() {
+  dirty = false;
   const { params, errors } = validate(readForm());
   let bad = false;
   for (const k of FIELDS) {
@@ -167,17 +179,18 @@ function update() {
     $(`${k}-err`).textContent = msg;
     if (msg) bad = true;
   }
-  for (const id of ['pdf', 'svg', 'dxf']) $(id).disabled = bad;
-  if (bad) return;
+  for (const id of ['pdf', 'instructions', 'svg', 'dxf']) $(id).disabled = bad;
+  if (bad) { clearTimeout(countsTimer); return; }
 
   const result = buildBox(params);
   current = { params, result };
   const o = result.overall;
   $('overall').textContent = `${fmt(o.H)} × ${fmt(o.D)} × ${fmt(o.W)}`;
   renderSafety(result.warnings);
-  renderPageCounts(result, params);
+  schedulePageCounts(result, params);
   refreshView();
   renderCutList(result);
+  renderInstructions(params);
   const w = $('warnings');
   w.hidden = !result.warnings.length;
   w.replaceChildren();
@@ -193,8 +206,18 @@ function update() {
   }
 }
 
-let timer;
-const schedule = () => { clearTimeout(timer); timer = setTimeout(update, 150); };
+let timer, countsTimer, dirty = false;
+const schedule = () => { dirty = true; clearTimeout(timer); timer = setTimeout(update, 150); };
+// Page counts rebuild the PDF for every paper size (seconds of work), so run them after input settles.
+const schedulePageCounts = (result, params) => {
+  clearTimeout(countsTimer);
+  countsTimer = setTimeout(() => renderPageCounts(result, params), 500);
+};
+// Settle any pending edit; false if the form is invalid so exports never use stale results.
+const ready = () => {
+  if (dirty) { clearTimeout(timer); update(); }
+  return !$('pdf').disabled;
+};
 
 form.addEventListener('input', (e) => {
   const name = e.target?.name;
@@ -237,27 +260,32 @@ function downloadBlob(blob, name) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-$('pdf').addEventListener('click', () => {
-  update();
+function showPDF(build, name) {
+  if (!ready()) return;
   const tab = window.open('', '_blank');
-  const doc = toPDF(current.result, current.params);
-  const url = URL.createObjectURL(doc.output('blob'));
-  if (tab) {
+  try {
+    const blob = build(current.result, current.params).output('blob');
+    if (!tab) { downloadBlob(blob, name); return; }
+    const url = URL.createObjectURL(blob);
     tab.location.href = url;
-  } else {
-    downloadBlob(doc.output('blob'), 'claude-box-templates.pdf');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (err) {
+    tab?.close();
+    throw err;
   }
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-});
+}
+
+$('pdf').addEventListener('click', () => showPDF(toPDF, 'claude-box-templates.pdf'));
+$('instructions').addEventListener('click', () => showPDF(instructionsPDF, 'claude-box-instructions.pdf'));
 
 $('svg').addEventListener('click', () => {
-  update();
+  if (!ready()) return;
   const svg = toSVG(current.result.parts);
   downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), 'claude-box-templates.svg');
 });
 
 $('dxf').addEventListener('click', () => {
-  update();
+  if (!ready()) return;
   const dxf = toDXF(current.result.parts);
   downloadBlob(new Blob([dxf], { type: 'application/dxf' }), 'claude-box-templates.dxf');
 });
