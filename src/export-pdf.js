@@ -415,12 +415,11 @@ function templatePages(doc, layoutScore, pageW, pageH) {
         const [x, y] = toPage(holePoint(h, it));
         doc.setDrawColor(170, 0, 0); doc.circle(x, y, h.d / 2, 'S');
         doc.line(x - 3, y, x + 3, y); doc.line(x, y - 3, x, y + 3);
-        if (h.face === 'plan') {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(4.5);
-          doc.setTextColor(170, 0, 0);
-          doc.text('INTER-TIER', x, y - h.d / 2 - 2, { align: 'center' });
-        }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(4.5);
+        doc.setTextColor(170, 0, 0);
+        if (h.face === 'plan') doc.text('INTER-TIER', x, y - h.d / 2 - 2, { align: 'center' });
+        if (h.depth) doc.text(`${h.depth} mm deep`, x, y + h.d / 2 + 3, { align: 'center' });
       }
       const planned = bestLabelPage.get(it.templateIndex);
       if (planned?.key === `${r}:${c}`) drawLabel(doc, planned.label, toPage);

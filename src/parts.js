@@ -1,5 +1,7 @@
 import { MASTER } from './master-data.js';
-import { CLEARANCE, DOWEL_D, DOWEL_LEN_SIDE, DOWEL_LEN_INTERTIER } from './params.js';
+import {
+  CLEARANCE, DOWEL_D, DOWEL_LEN_SIDE, DOWEL_LEN_INTERTIER, DOWEL_DEPTH_SIDE, DOWEL_DEPTH_END, DOWEL_DEPTH_INTERTIER,
+} from './params.js';
 import {
   toPaths, fromPaths, union, diff, inter, offset, rect, scaleLoop, areaOf, bboxOf, outerCount, signedArea,
 } from './geom.js';
@@ -88,7 +90,7 @@ function addBoardDrillMarks(parts, warnings, seam, sz, name, boardId) {
   const cx = board.length / 2;
   for (const xSign of [-1, 1]) for (const zDesign of seam.zs) {
     const x = cx + xSign * xOff, z = zDesign * sz;
-    board.holes.push({ z: x, y: z, d: seam.d, face: 'plan', label: 'Inter-tier dowel' });
+    board.holes.push({ z: x, y: z, d: seam.d, depth: DOWEL_DEPTH_INTERTIER, face: 'plan', label: 'Inter-tier dowel' });
     const marginX = Math.min(x, board.length - x) - seam.d / 2;
     const marginZ = Math.min(z - b.z0, b.z1 - z) - seam.d / 2;
     if (marginX < MIN_DOWEL_MARGIN || marginZ < MIN_DOWEL_MARGIN) {
@@ -150,7 +152,7 @@ export function buildBox(params) {
     const ring = (t) => diff(E, offset(E, -t));
 
     const endHoles = dowels.filter((d) => contains(E, d.z, d.y));
-    add(`${tier}.ends`, `${T} carcass end`, tier, 'carcass', 'profile', tc, xs.end, E, { qty: 2, holes: endHoles });
+    add(`${tier}.ends`, `${T} carcass end`, tier, 'carcass', 'profile', tc, xs.end, E, { qty: 2, holes: endHoles.map((h) => ({ ...h, depth: DOWEL_DEPTH_END })) });
 
     const floor = inter(E, rect(-FAR, y0, FAR, y0 + tc));
     add(`${tier}.floor`, `${T} ${tier === 'bottom' ? 'base' : 'floor'}`, tier, 'carcass', 'board', tc, xs.carcass, floor);
@@ -222,7 +224,7 @@ export function buildBox(params) {
   addBoardDrillMarks(parts, warnings, middleTopSeam, sz, 'Middle/top seam drill mark', 'middle.top');
   addBoardDrillMarks(parts, warnings, middleTopSeam, sz, 'Middle/top seam drill mark', 'top.floor');
 
-  add('sides.walnut', 'Side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels });
+  add('sides.walnut', 'Side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels.map((h) => ({ ...h, depth: DOWEL_DEPTH_SIDE })) });
 
   const endsUnion = union(...['bottom', 'middle', 'top'].map((t) => toPaths([scaleLoop(MASTER.tiers[t].env, sz, sy)])));
   for (const [i, d] of dowels.entries()) {

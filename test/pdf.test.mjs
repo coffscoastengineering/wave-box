@@ -190,3 +190,18 @@ test('lid cut-list row flags the modelled nose overlap at design size only', () 
   assert.match(lidNotes({ H: 299.8 }), /lid nose dips into the top floor/);
   assert.doesNotMatch(lidNotes({ H: 450, D: 560 }), /lid nose/);
 });
+
+test('every dowel hole carries a pocket depth that adds up to the hardware length', () => {
+  const { result } = make({ H: 299.8 });
+  const byId = Object.fromEntries(result.parts.map((p) => [p.id, p]));
+  const depths = (p) => [...new Set(p.holes.map((h) => h.depth))];
+  assert.deepEqual(depths(byId['sides.walnut']), [4]);
+  assert.deepEqual(depths(byId['bottom.ends']), [2]);
+  for (const id of ['bottom.top', 'middle.floor', 'middle.top', 'top.floor']) assert.deepEqual(depths(byId[id]), [2], id);
+  const gap = 10;
+  assert.equal(2 + gap + 4, byId.dowel.length);
+  assert.equal(2 + gap + 2, byId.interTierDowel.length);
+  const rows = cutList(result.parts);
+  assert.match(rows.find((r) => r.id === 'sides.walnut').notes, /Drill 5× Ø20 × 4 mm deep/);
+  assert.match(rows.find((r) => r.id === 'middle.floor').notes, /Drill 4× Ø20 × 2 mm deep/);
+});

@@ -15,6 +15,13 @@ export const DOWEL_D = 20;
 // file, not scaled with timber thickness — matches the physical hardware as modeled.
 export const DOWEL_LEN_SIDE = 16;
 export const DOWEL_LEN_INTERTIER = 14;
+// Blind pocket depths. They add up to the hardware lengths above: side dowel 16 = 2 (carcass
+// end) + 10 (stand-off) + 4 (side timber); inter-tier dowel 14 = 2 + 10 (tier gap) + 2.
+// Measured from the "Box Revision" pockets (side timber 4, board pockets 2); the model leaves
+// the carcass-end pockets out, but the dowel reaches 2 mm into each end.
+export const DOWEL_DEPTH_SIDE = 4;
+export const DOWEL_DEPTH_END = 2;
+export const DOWEL_DEPTH_INTERTIER = 2;
 
 // All numeric values are millimetres.
 export function validate(raw = {}) {
