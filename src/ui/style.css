@@ -214,6 +214,7 @@ legend {
 .seg {
   display: flex;
   overflow: hidden;
+  padding: 4px;
   border: 1px solid #596154;
   border-radius: 7px;
   background: #181d1a;
@@ -243,6 +244,7 @@ legend {
   gap: 2px;
   min-height: 44px;
   padding: 6px 8px;
+  border-radius: 5px;
   color: var(--ink-soft);
   font-weight: 650;
   cursor: pointer;
@@ -624,7 +626,7 @@ button:disabled { opacity: .52; cursor: not-allowed; }
 .cutlist,
 .instructions-panel {
   overflow: hidden;
-  padding: 0;
+  padding: 2px 0;
   box-shadow: none;
 }
 
@@ -665,7 +667,7 @@ button:disabled { opacity: .52; cursor: not-allowed; }
 }
 .instructions-panel li { margin: 0 0 9px; }
 .instructions-panel li:last-child { margin-bottom: 0; }
-.table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+.table-wrap { overflow-x: auto; padding: 4px 6px 6px; border-top: 1px solid var(--line); }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td {
   padding: 10px 12px;

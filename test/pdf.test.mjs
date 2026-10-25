@@ -202,6 +202,13 @@ test('every dowel hole carries a pocket depth that adds up to the hardware lengt
   assert.equal(2 + gap + 4, byId.dowel.length);
   assert.equal(2 + gap + 2, byId.interTierDowel.length);
   const rows = cutList(result.parts);
-  assert.match(rows.find((r) => r.id === 'sides.walnut').notes, /Drill 5× Ø20 × 4 mm deep/);
-  assert.match(rows.find((r) => r.id === 'middle.floor').notes, /Drill 4× Ø20 × 2 mm deep/);
+  assert.match(rows.find((r) => r.id === 'sides.walnut').notes, /Recess 5× Ø20 × 4 mm deep/);
+  assert.match(rows.find((r) => r.id === 'middle.floor').notes, /Recess 4× Ø20 × 2 mm deep/);
+});
+
+test('generated (non-model) drawer outlines are flagged in the cut list; exact ones are not', () => {
+  const note = (raw, id) => { const { result } = make(raw); return cutList(result.parts).find((r) => r.id === id).notes; };
+  assert.doesNotMatch(note({ H: 299.8 }, 'middle.drawerSide'), /Generated outline/);
+  assert.match(note({ H: 450, D: 560 }, 'middle.drawerSide'), /Generated outline/);
+  assert.match(note({ H: 450, D: 560 }, 'top.lid'), /Generated outline/);
 });

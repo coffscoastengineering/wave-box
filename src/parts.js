@@ -109,6 +109,8 @@ export function buildBox(params) {
   const exact = Math.abs(sz - 1) <= EXACT_SCALE_TOL && Math.abs(sy - 1) <= EXACT_SCALE_TOL
     && tc === X.carcass && td === X.drawer;
   const exactPaths = (loop) => toPaths([scaleLoop(loop, sz, sy)]);
+  // Away from the model's size and timber the drawer and lid outlines are generated, not measured.
+  const generated = exact ? {} : { note: 'Generated outline at this size and timber: it can differ from the Fusion model by up to about 3 mm, so test-fit before glue-up' };
 
   const xs = {
     end: [W / 2 - tc, W / 2],
@@ -174,7 +176,7 @@ export function buildBox(params) {
       }
       // The model's lid nose dips ~3.6 mm into the top floor's front corner (~7 mm wide).
       const note = exact ? 'As modelled, the lid nose dips into the top floor front corner (about 3.6 mm deep, 7 mm wide): pare the nose or the floor corner to fit' : '';
-      if (!add('top.lid', 'Lid', tier, 'drawer', 'curved', td, xs.front, lid, { note })) {
+      if (!add('top.lid', 'Lid', tier, 'drawer', 'curved', td, xs.front, lid, exact ? { note } : generated)) {
         warnings.push('Lid does not fit — reduce drawer/lid thickness or increase size.');
       }
       continue;
@@ -212,10 +214,10 @@ export function buildBox(params) {
       warnings.push(`${D_} does not fit — reduce carcass/drawer thickness or increase height.`);
       continue;
     }
-    add(`${tier}.drawerFront`, `${D_} front`, tier, 'drawer', 'curved', td, xs.front, dFront);
-    add(`${tier}.drawerSide`, `${D_} side`, tier, 'drawer', 'profile', td, xs.side, dSide, { qty: 2 });
-    add(`${tier}.drawerBottom`, `${D_} bottom`, tier, 'drawer', 'board', td, xs.inner, dBottom);
-    add(`${tier}.drawerBack`, `${D_} back`, tier, 'drawer', 'curved', td, xs.inner, dBack);
+    add(`${tier}.drawerFront`, `${D_} front`, tier, 'drawer', 'curved', td, xs.front, dFront, generated);
+    add(`${tier}.drawerSide`, `${D_} side`, tier, 'drawer', 'profile', td, xs.side, dSide, { qty: 2, ...generated });
+    add(`${tier}.drawerBottom`, `${D_} bottom`, tier, 'drawer', 'board', td, xs.inner, dBottom, generated);
+    add(`${tier}.drawerBack`, `${D_} back`, tier, 'drawer', 'curved', td, xs.inner, dBack, generated);
   }
 
   const [bottomMiddleSeam, middleTopSeam] = MASTER.interTierSeams;
