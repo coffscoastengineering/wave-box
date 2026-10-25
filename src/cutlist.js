@@ -20,7 +20,7 @@ export function cutList(parts) {
     } else {
       row.finished = dims([p.length, depth, height]);
       row.block = dims(blockDims(p));
-      row.notes = `Carve from block; bandsaw needs ${fmt(p.length)} depth of cut`;
+      row.notes = [`Carve from block; bandsaw needs ${fmt(p.length)} depth of cut`, p.note].filter(Boolean).join('. ');
     }
     return row;
   });

@@ -16,17 +16,6 @@ const refLoop = (ref) => {
 };
 const design = () => buildBox(validate({ H: 299.8, D: 375, W: 300 }).params);
 
-// Fusion model inconsistencies the generator deliberately corrects:
-// drawer fronts are inset (bottom) / proud (middle) by 1.5 mm — generator makes them flush;
-// Fusion leaves ~3 mm behind drawers — generator uses the spec's 1.5 mm clearance;
-// Fusion lid overlaps the top floor — generator rests the lid on the floor.
-const LOOSE = {
-  'bottom.drawerFront': 2.0, 'middle.drawerFront': 2.0,
-  'bottom.drawerSide': 3.5, 'bottom.drawerBottom': 3.5, 'bottom.drawerBack': 3.5,
-  'middle.drawerSide': 3.5, 'middle.drawerBottom': 3.5, 'middle.drawerBack': 3.5,
-  'top.lid': 4.0,
-};
-
 test('design size: every part matches its Fusion section', () => {
   const { parts } = design();
   const withRef = parts.filter((p) => p.ref);
@@ -34,7 +23,7 @@ test('design size: every part matches its Fusion section', () => {
   const bad = [];
   for (const p of withRef) {
     const d = hausdorff(p.loops[0], refLoop(p.ref));
-    if (d > (LOOSE[p.id] ?? 0.5)) bad.push(`${p.id}: ${d.toFixed(2)} mm`);
+    if (d > 0.5) bad.push(`${p.id}: ${d.toFixed(2)} mm`);
   }
   assert.deepEqual(bad, []);
 });
@@ -69,7 +58,12 @@ function overlaps(parts) {
   return hits;
 }
 
-test('design size: no parts collide', () => assert.deepEqual(overlaps(design().parts), []));
+// The model's own lid nose dips 24 mm² into the top floor's front corner (Fusion confirms a
+// 6.9 cm³ interference), and the design-size lid is the model's exact outline, so allow just that.
+test('design size: no parts collide (except the model lid nose into the top floor)', () => {
+  const hits = overlaps(design().parts).filter((h) => !(h.startsWith('top.floor x top.lid:') && parseFloat(h.split(': ')[1]) <= 25));
+  assert.deepEqual(hits, []);
+});
 
 test('overall size reflects the real box, not the drilling guides\' length/depth coordinates', () => {
   for (const [H, D] of [[150, 190], [600, 750], [300, 375], [220, 300]]) {
@@ -182,4 +176,22 @@ test('dowel hardware counts: 10 side dowels (5 positions x 2 sides) + 8 inter-ti
   const rows = cutList(parts);
   const totalDowels = rows.filter((r) => r.id === 'dowel' || r.id === 'interTierDowel').reduce((n, r) => n + r.qty, 0);
   assert.equal(totalDowels, 18);
+});
+
+test('design size: drawers and lid match the model outlines (reference/fusion-sections.json) within 0.05 mm', () => {
+  const ref = JSON.parse(fs.readFileSync(new URL('../reference/fusion-sections.json', import.meta.url)));
+  const OFF = MASTER.zShift;
+  const segs = (poly) => poly.map((p, i) => [p, poly[(i + 1) % poly.length]]);
+  const dist = (p, S) => S.reduce((m, [a, b]) => {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const k = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L)) : 0;
+    return Math.min(m, Math.hypot(p[0] - a[0] - k * dx, p[1] - a[1] - k * dy));
+  }, Infinity);
+  for (const p of design().parts.filter((q) => /drawer(Front|Side|Bottom|Back)$|lid$/.test(q.id))) {
+    const [path, body] = p.ref.split('#');
+    const R = ref.find((s) => s.path === path && (!body || s.body === body)).loops[0].pts;
+    const G = p.loops[0].map(([z, y]) => [z - OFF, y]);
+    const worst = Math.max(...G.map((q) => dist(q, segs(R))), ...R.map((q) => dist(q, segs(G))));
+    assert.ok(worst < 0.05, `${p.id} deviates ${worst.toFixed(3)} mm`);
+  }
 });

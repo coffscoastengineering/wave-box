@@ -8,6 +8,9 @@ const FAR = 1e5;
 const MIN_DOWEL_MARGIN = 5;
 const MIN_DRAWER_HEIGHT = 20;
 const MIN_PIECE_AREA = 20;
+// The model's real drawer and lid outlines are only reusable near the design size and timber;
+// further out the offset construction below takes over (thickness would otherwise scale too).
+const EXACT_SCALE_TOL = 0.02;
 
 const REFS = {
   'bottom.ends': 'Bottom:1+Sides (1):1+Component36:1',
@@ -100,6 +103,10 @@ export function buildBox(params) {
   const sz = D / MASTER.design.D, sy = H / MASTER.design.H;
   const parts = [];
   const warnings = [];
+  const X = MASTER.exact;
+  const exact = Math.abs(sz - 1) <= EXACT_SCALE_TOL && Math.abs(sy - 1) <= EXACT_SCALE_TOL
+    && tc === X.carcass && td === X.drawer;
+  const exactPaths = (loop) => toPaths([scaleLoop(loop, sz, sy)]);
 
   const xs = {
     end: [W / 2 - tc, W / 2],
@@ -155,10 +162,17 @@ export function buildBox(params) {
       }
       const wall = inter(inter(ring(tc), back), rect(-FAR, y0 + tc, FAR, wallTop));
       add('top.wall', `${T} back wall (curl)`, tier, 'carcass', 'curved', tc, xs.carcass, wall);
-      const air = diff(rect(-FAR, y0 + tc, FAR, FAR), E);
-      let lid = inter(inter(E, offset(air, td)), rect(-FAR, y0 + tc, FAR, FAR));
-      lid = diff(lid, inter(back, rect(-FAR, -FAR, FAR, wallTop + clr)));
-      if (!add('top.lid', 'Lid', tier, 'drawer', 'curved', td, xs.front, lid)) {
+      let lid;
+      if (exact) {
+        lid = exactPaths(X.lid);
+      } else {
+        const air = diff(rect(-FAR, y0 + tc, FAR, FAR), E);
+        lid = inter(inter(E, offset(air, td)), rect(-FAR, y0 + tc, FAR, FAR));
+        lid = diff(lid, inter(back, rect(-FAR, -FAR, FAR, wallTop + clr)));
+      }
+      // The model's lid nose dips ~3.6 mm into the top floor's front corner (~7 mm wide).
+      const note = exact ? 'As modelled, the lid nose dips into the top floor front corner (about 3.6 mm deep, 7 mm wide): pare the nose or the floor corner to fit' : '';
+      if (!add('top.lid', 'Lid', tier, 'drawer', 'curved', td, xs.front, lid, { note })) {
         warnings.push('Lid does not fit — reduce drawer/lid thickness or increase size.');
       }
       continue;
@@ -174,13 +188,19 @@ export function buildBox(params) {
     add(`${tier}.wall`, `${T} back wall`, tier, 'carcass', 'curved', tc, xs.carcass, wall);
 
     const yd0 = y0 + tc + clr, yd1 = y1 - tc - clr;
-    const interior = diff(E, union(floor, top, wall));
-    const dOut = diff(inter(interior, rect(-FAR, yd0, FAR, yd1)), offset(wall, clr));
-    const airFront = diff(rect(-FAR, y0, zc, y1), E);
-    const dFront = inter(dOut, offset(airFront, td));
-    const dSide = diff(dOut, dFront);
-    const dBottom = inter(dSide, rect(-FAR, yd0, FAR, yd0 + td));
-    const dBack = diff(inter(dSide, offset(wall, clr + td)), rect(-FAR, -FAR, FAR, yd0 + td));
+    let dFront, dSide, dBottom, dBack;
+    if (exact) {
+      const x = X[tier];
+      [dFront, dSide, dBottom, dBack] = [x.front, x.side, x.bottom, x.back].map(exactPaths);
+    } else {
+      const interior = diff(E, union(floor, top, wall));
+      const dOut = diff(inter(interior, rect(-FAR, yd0, FAR, yd1)), offset(wall, clr));
+      const airFront = diff(rect(-FAR, y0, zc, y1), E);
+      dFront = inter(dOut, offset(airFront, td));
+      dSide = diff(dOut, dFront);
+      dBottom = inter(dSide, rect(-FAR, yd0, FAR, yd0 + td));
+      dBack = diff(inter(dSide, offset(wall, clr + td)), rect(-FAR, -FAR, FAR, yd0 + td));
+    }
 
     const D_ = `${T} drawer`;
     const fits = yd1 - yd0 >= MIN_DRAWER_HEIGHT

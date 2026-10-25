@@ -184,3 +184,9 @@ test("every printable template carries a part code somewhere in the pdf", () => 
     assert.deepEqual(missing, [], JSON.stringify(raw));
   }
 });
+
+test('lid cut-list row flags the modelled nose overlap at design size only', () => {
+  const lidNotes = (raw) => { const { result } = make(raw); return cutList(result.parts).find((r) => r.id === 'top.lid').notes; };
+  assert.match(lidNotes({ H: 299.8 }), /lid nose dips into the top floor/);
+  assert.doesNotMatch(lidNotes({ H: 450, D: 560 }), /lid nose/);
+});

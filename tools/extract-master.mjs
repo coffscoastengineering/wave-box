@@ -4,9 +4,9 @@ import { simplify, signedArea, bboxOf } from '../src/geom.js';
 
 const sections = JSON.parse(fs.readFileSync(new URL('../reference/fusion-sections.json', import.meta.url)));
 
-const find = (path) => {
-  const s = sections.find((p) => p.path === path);
-  if (!s) throw new Error(`missing section ${path}`);
+const find = (path, body) => {
+  const s = sections.find((p) => p.path === path && (!body || p.body === body));
+  if (!s) throw new Error(`missing section ${path} ${body ?? ''}`);
   return s.loops[0].pts;
 };
 const walnutRaw = find('Sides:1+Side 1:1');
@@ -19,7 +19,7 @@ const norm = (pts) => {
   return l;
 };
 
-const env = (path) => norm(find(path));
+const env = (path, body) => norm(find(path, body));
 const out = {
   design: { H: 299.8, D: 375, W: 300 },
   zShift: r3(zShift),
@@ -40,6 +40,24 @@ const out = {
   // 5 mm edge-margin warning by 13.8–23.4 mm at design size. (The separate "Dowels" bodies
   // under Middle/Bottom, at x≈±94–114 inside the drawer footprint, are unrelated drawer
   // joinery, not side-fixing dowels — not used here.)
+  // Exact drawer and lid outlines from the model. Only valid at the design size and design
+  // timber (carcass 6, drawer 5): parts.js uses them there and falls back to offsets elsewhere.
+  exact: {
+    carcass: 6, drawer: 5,
+    bottom: {
+      front: env('Bottom:1+Draw (1):1+Component48:1', 'Body8'),
+      side: env('Bottom:1+Draw (1):1+Component48:1', 'Body7'),
+      bottom: env('Bottom:1+Draw (1):1+Component48:1', 'Body6'),
+      back: env('Bottom:1+Draw (1):1+Component48:1', 'Body2'),
+    },
+    middle: {
+      front: env('Middle:1+Draw:1', 'Body1'),
+      side: env('Middle:1+Draw:1+Component44:1', 'Body4'),
+      bottom: env('Middle:1+Draw:1+Component44:1', 'Body5'),
+      back: env('Middle:1+Draw:1+Component44:1', 'Body1'),
+    },
+    lid: env('Top:1+Lid:1', 'Body1'),
+  },
   dowels: [
     { z: r3(-114 + zShift), y: 25, d: 20 },
     { z: r3(73.87 + zShift), y: 142.84, d: 20 },
