@@ -20,6 +20,7 @@ export function pairedDimension(changed, value) {
 export function safetyStatus(warnings = []) {
   if (!warnings.length) return { state: 'good', label: 'Good to cut' };
   const text = warnings.join(' ').toLowerCase();
+  if (text.includes('stand-off')) return { state: 'warn', label: 'Check dowel length' };
   if (text.includes('dowel')) return { state: 'warn', label: 'Dowel near edge' };
   if (text.includes('splits')) return { state: 'warn', label: 'Part may split' };
   if (text.includes('drawer') || text.includes('lid') || text.includes('too short')) {

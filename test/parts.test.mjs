@@ -195,3 +195,9 @@ test('design size: drawers and lid match the model outlines (reference/fusion-se
     assert.ok(worst < 0.05, `${p.id} deviates ${worst.toFixed(3)} mm`);
   }
 });
+
+test('stand-off gap other than the 10 mm the 16 mm dowels span warns; 10 mm does not', () => {
+  assert.ok(!buildBox(validate({ gap: 10 }).params).warnings.some((w) => w.includes('Stand-off gap')));
+  const w = buildBox(validate({ gap: 14 }).params).warnings.find((x) => x.includes('Stand-off gap'));
+  assert.ok(w && w.includes('20 mm long'), w);
+});

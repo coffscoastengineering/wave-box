@@ -226,6 +226,11 @@ export function buildBox(params) {
 
   add('sides.walnut', 'Side', 'sides', 'walnut', 'profile', tw, xs.walnut, walnutPaths, { qty: 2, holes: dowels.map((h) => ({ ...h, depth: DOWEL_DEPTH_SIDE })) });
 
+  const dowelSpan = DOWEL_LEN_SIDE - DOWEL_DEPTH_SIDE - DOWEL_DEPTH_END;
+  if (Math.abs(gap - dowelSpan) > 0.01) {
+    warnings.push(`Stand-off gap is ${gap} mm but the ${DOWEL_LEN_SIDE} mm side dowels only span ${dowelSpan} mm: use dowels about ${gap + DOWEL_DEPTH_SIDE + DOWEL_DEPTH_END} mm long, or set the gap to ${dowelSpan} mm.`);
+  }
+
   const endsUnion = union(...['bottom', 'middle', 'top'].map((t) => toPaths([scaleLoop(MASTER.tiers[t].env, sz, sy)])));
   for (const [i, d] of dowels.entries()) {
     const mw = edgeDistance(walnutPaths, d.z, d.y) - d.d / 2;
